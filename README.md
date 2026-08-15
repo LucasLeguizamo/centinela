@@ -68,15 +68,23 @@ Este proyecto nació mirando contratación pública del SECOP II. Ese frente tie
 pnpm install
 pnpm test                          # autochequeo de geometría y umbrales
 
-node src/alertar.js --seco         # ciclo completo sin enviar nada
+node src/alertar.js --seco         # ciclo de alertas sin enviar nada
 node src/alertar.js                # revisa y envía de verdad
 node src/alertar.js --desde 8000   # reproduce un evento real (para la demo)
+
+node src/responder.js --seco       # clasifica preguntas entrantes, sin enviar
+node src/responder.js              # responde de verdad
+node src/comparar.js --dias 10     # un sismo visto desde varias ciudades
 
 kapso build                        # compila workflows/**/workflow.ts a JSON
 kapso push                         # publica en Kapso (queda en draft)
 ```
 
-El workflow `bienvenida` se dispara con cualquier mensaje entrante al número configurado, pide municipio y confirma la suscripción. `src/alertar.js` es el ciclo: consulta el USGS, calcula la intensidad en el municipio de cada suscriptor y le escribe solo a quien lo sintió.
+Tres piezas:
+
+- **`workflows/onboarding`** — se dispara con cualquier mensaje entrante, ofrece la lista de ciudades y confirma la suscripción. Detalle en [`docs/ONBOARDING.md`](docs/ONBOARDING.md).
+- **`src/alertar.js`** — consulta el USGS, calcula la intensidad en el municipio de cada suscriptor y le escribe solo a quien lo sintió. Agrupa las réplicas en un mensaje.
+- **`src/responder.js`** — contesta las preguntas de seguimiento con datos: *¿qué tan fuerte fue?*, *¿hubo réplicas?*, *cambiar*, *baja*.
 
 ### Verificado de punta a punta
 
