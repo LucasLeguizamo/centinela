@@ -121,6 +121,60 @@ export async function sismosRecientes({ desdeMinutos = 60, magnitudMinima = 2.5 
   }));
 }
 
+// Una réplica es un sismo menor, cerca y poco después de uno mayor. Los
+// umbrales son convención sismológica, no ciencia exacta: sirven para no
+// mandar cinco mensajes iguales, no para publicar un paper.
+const RADIO_REPLICA_KM = 150;
+const VENTANA_REPLICA_DIAS = 7;
+
+/**
+ * Marca cada sismo con `replicaDe` (el id del principal) o `null`.
+ *
+ * Importa porque tras el M7.4 del Chocó vinieron un M5.0 y dos de M4: cinco
+ * alertas sueltas a alguien que lleva días durmiendo en la calle no es un
+ * servicio, es acoso.
+ */
+export function clasificarReplicas(sismos) {
+  const porHora = [...sismos].sort((a, b) => a.hora - b.hora);
+
+  return porHora.map((sismo) => {
+    const principal = porHora.find(
+      (otro) =>
+        otro.id !== sismo.id &&
+        otro.magnitud > sismo.magnitud &&
+        otro.hora < sismo.hora &&
+        (sismo.hora - otro.hora) / 86_400_000 <= VENTANA_REPLICA_DIAS &&
+        distanciaHipocentral(otro, { lat: sismo.lat, lon: sismo.lon }) <= RADIO_REPLICA_KM
+    );
+    return { ...sismo, replicaDe: principal ? principal.id : null, principal };
+  });
+}
+
+/** Un solo mensaje para varias réplicas, en vez de uno por cada una. */
+export function mensajeReplicas(replicas, lugar) {
+  const mayor = replicas.reduce((a, b) => (b.magnitud > a.magnitud ? b : a));
+  const principal = mayor.principal;
+  const n = replicas.length;
+
+  const encabezado =
+    n === 1
+      ? `🔁 Réplica M${mayor.magnitud}`
+      : `🔁 ${n} réplicas en las últimas horas · la mayor M${mayor.magnitud}`;
+
+  const referencia = principal
+    ? `\n\nSon del sismo M${principal.magnitud} del ${principal.hora.toLocaleDateString("es-CO", { timeZone: "America/Bogota", day: "numeric", month: "long" })}.`
+    : "";
+
+  const intensidad = describirIntensidad(intensidadEn(mayor, lugar)).etiqueta;
+
+  return (
+    `${encabezado}${referencia}\n\n` +
+    `En ${lugar.nombre} la más fuerte se sintió ${intensidad}.\n\n` +
+    `Las réplicas son normales después de un sismo grande y van bajando de intensidad con el tiempo.\n\n` +
+    `Fuente: USGS\n${mayor.url}`
+  );
+}
+
 /** US-003 + US-004: ¿le aviso a este suscriptor, y qué le digo? */
 export function evaluarAlerta(sismo, lugar) {
   const mmi = intensidadEn(sismo, lugar);

@@ -1,0 +1,162 @@
+{
+  "edges": [
+    {
+      "label": "next",
+      "source": "start",
+      "target": "saludo"
+    },
+    {
+      "label": "next",
+      "source": "saludo",
+      "target": "pedir_ciudad"
+    },
+    {
+      "label": "next",
+      "source": "pedir_ciudad",
+      "target": "recibir_ciudad"
+    },
+    {
+      "label": "next",
+      "source": "recibir_ciudad",
+      "target": "confirmar"
+    }
+  ],
+  "nodes": [
+    {
+      "data": {
+        "config": {},
+        "node_type": "start"
+      },
+      "id": "start",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "message": "Hola 👋 Soy Centinela.\n\nTe aviso cuando tiemble donde estás, y te digo qué tan fuerte se sintió *ahí* — no la magnitud del epicentro, que sola no dice nada.\n\nAntes de seguir, algo honesto: el aviso te llega *después* del temblor, no antes. Nadie puede avisarte antes con datos públicos. Sirve para saber qué pasó, cuánto te tocó, y avisarte de las réplicas."
+        },
+        "node_type": "send_text"
+      },
+      "id": "saludo",
+      "position": {
+        "x": 240,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "body_text": "Elegí tu ciudad para calcular qué tan fuerte se sentiría un sismo ahí.",
+          "footer_text": "Podés cambiarla después escribiendo CAMBIAR",
+          "header_text": "¿Dónde estás?",
+          "header_type": "text",
+          "interactive_type": "list",
+          "list_button_text": "Ver ciudades",
+          "list_sections": [
+            {
+              "rows": [
+                {
+                  "description": "Chocó",
+                  "id": "quibdo",
+                  "title": "Quibdó"
+                },
+                {
+                  "description": "Risaralda",
+                  "id": "pereira",
+                  "title": "Pereira"
+                },
+                {
+                  "description": "Caldas",
+                  "id": "manizales",
+                  "title": "Manizales"
+                },
+                {
+                  "description": "Quindío",
+                  "id": "armenia",
+                  "title": "Armenia"
+                },
+                {
+                  "description": "Santander",
+                  "id": "bucaramanga",
+                  "title": "Bucaramanga"
+                },
+                {
+                  "description": "Valle del Cauca",
+                  "id": "cali",
+                  "title": "Cali"
+                },
+                {
+                  "description": "Nariño",
+                  "id": "pasto",
+                  "title": "Pasto"
+                },
+                {
+                  "description": "Nariño · riesgo de tsunami",
+                  "id": "tumaco",
+                  "title": "Tumaco"
+                }
+              ],
+              "title": "Zona sísmica alta"
+            },
+            {
+              "rows": [
+                {
+                  "description": "Antioquia",
+                  "id": "medellin",
+                  "title": "Medellín"
+                },
+                {
+                  "description": "Cundinamarca",
+                  "id": "bogota",
+                  "title": "Bogotá"
+                }
+              ],
+              "title": "Otras ciudades"
+            }
+          ]
+        },
+        "node_type": "send_interactive"
+      },
+      "id": "pedir_ciudad",
+      "position": {
+        "x": 480,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "has_timeout": false,
+          "save_response_to": "ciudad"
+        },
+        "node_type": "wait_for_response"
+      },
+      "id": "recibir_ciudad",
+      "position": {
+        "x": 720,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "message": "Listo, quedaste suscrito para {{vars.ciudad}} ✅\n\nNo te voy a escribir todos los días. Solo cuando tiemble lo suficiente para sentirse ahí — y si viene una réplica, te la agrupo en un solo mensaje en vez de despertarte cinco veces.\n\nEscribime cuando quieras si querés entender algo. Escribí BAJA para dejar de recibirlas."
+        },
+        "node_type": "send_text"
+      },
+      "id": "confirmar",
+      "position": {
+        "x": 960,
+        "y": 0
+      },
+      "type": "flow-node"
+    }
+  ]
+}

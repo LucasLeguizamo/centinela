@@ -8,11 +8,14 @@ import {
   describirIntensidad,
   evaluarAlerta,
   normalizarMunicipio,
+  clasificarReplicas,
+  mensajeReplicas,
   MUNICIPIOS,
 } from "./sismos.js";
 
 // El evento real del 10 de agosto de 2026, con los datos del USGS.
 const CHOCO = {
+  id: "principal",
   magnitud: 7.4,
   lat: 4.8436,
   lon: -76.2422,
@@ -73,6 +76,59 @@ assert.equal(normalizarMunicipio("Springfield"), null);
 // Umbrales de percepción.
 assert.equal(describirIntensidad(1.5).alertar, false);
 assert.equal(describirIntensidad(3.5).alertar, true);
+
+// --- Réplicas (US-007) -------------------------------------------------
+// La secuencia real del Chocó: el principal y sus dos réplicas, con los
+// datos que devolvió el USGS.
+const SECUENCIA = [
+  CHOCO,
+  {
+    id: "replica_m5",
+    magnitud: 5.0,
+    lat: 4.9,
+    lon: -76.4,
+    profundidadKm: 99,
+    lugar: "16 km W of San José del Palmar",
+    hora: new Date("2026-08-10T13:18:00Z"),
+    url: "",
+  },
+  {
+    id: "replica_m42",
+    magnitud: 4.2,
+    lat: 4.88,
+    lon: -76.35,
+    profundidadKm: 101,
+    lugar: "11 km WNW of San José del Palmar",
+    hora: new Date("2026-08-10T18:00:00Z"),
+    url: "",
+  },
+  // Mismo día, magnitud parecida, pero a 900 km: no es réplica de nada.
+  {
+    id: "lejano",
+    magnitud: 4.4,
+    lat: 11.5,
+    lon: -72.0,
+    profundidadKm: 30,
+    lugar: "La Guajira",
+    hora: new Date("2026-08-10T20:00:00Z"),
+    url: "",
+  },
+];
+
+const clasificados = clasificarReplicas(SECUENCIA.map((s) => ({ id: s.id ?? "principal", ...s })));
+const porId = Object.fromEntries(clasificados.map((s) => [s.id, s]));
+
+assert.equal(porId.principal.replicaDe, null, "el M7.4 no es réplica de nadie");
+assert.equal(porId.replica_m5.replicaDe, "principal", "el M5.0 es réplica del M7.4");
+assert.equal(porId.replica_m42.replicaDe, "principal", "el M4.2 es réplica del M7.4");
+assert.equal(porId.lejano.replicaDe, null, "un sismo a 900 km no es réplica");
+
+// Dos réplicas tienen que caber en UN mensaje, no en dos.
+const replicas = clasificados.filter((s) => s.replicaDe);
+const texto = mensajeReplicas(replicas, MUNICIPIOS.quibdo);
+assert.ok(texto.includes("2 réplicas"), "debe agrupar las dos réplicas");
+assert.ok(texto.includes("M5"), "debe destacar la mayor");
+assert.ok(!texto.includes("undefined"), "sin huecos en el mensaje");
 
 console.log("✓ sismos.js ok");
 console.log(`  Quibdó  MMI ${mmiQuibdo.toFixed(1)}  ${describirIntensidad(mmiQuibdo).etiqueta}`);

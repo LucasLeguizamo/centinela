@@ -8,7 +8,13 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { promisify } from "node:util";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { sismosRecientes, evaluarAlerta, normalizarMunicipio } from "./sismos.js";
+import {
+  sismosRecientes,
+  evaluarAlerta,
+  normalizarMunicipio,
+  clasificarReplicas,
+  mensajeReplicas,
+} from "./sismos.js";
 
 const ejecutar = promisify(execFile);
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -59,32 +65,53 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
   // Clave evento+teléfono: si a alguien ya se le avisó de este sismo, no se
   // le repite aunque el USGS revise la magnitud diez veces (y lo hace).
   const enviados = new Set(await leerJson(ENVIADOS, []));
-  const sismos = await sismosRecientes({ desdeMinutos, magnitudMinima: 2.5 });
+  const sismos = clasificarReplicas(
+    await sismosRecientes({ desdeMinutos, magnitudMinima: 2.5 })
+  );
   const resultados = [];
 
-  for (const sismo of sismos) {
-    for (const sus of suscriptores) {
-      const lugar = normalizarMunicipio(sus.municipio);
-      if (!lugar) {
-        console.warn(`Municipio desconocido para ${sus.telefono}: ${sus.municipio}`);
-        continue;
-      }
+  for (const sus of suscriptores) {
+    const lugar = normalizarMunicipio(sus.municipio);
+    if (!lugar) {
+      console.warn(`Municipio desconocido para ${sus.telefono}: ${sus.municipio}`);
+      continue;
+    }
 
-      const clave = `${sismo.id}:${sus.telefono}`;
-      if (enviados.has(clave)) continue;
+    // Solo lo que esta persona no ha recibido y de verdad sintió.
+    const pendientes = sismos.filter(
+      (s) => !enviados.has(`${s.id}:${sus.telefono}`) && evaluarAlerta(s, lugar).alertar
+    );
+    if (pendientes.length === 0) continue;
 
-      const alerta = evaluarAlerta(sismo, lugar);
-      if (!alerta.alertar) continue;
+    // Los principales van uno por uno: cada sismo grande es su propia noticia.
+    // Las réplicas van juntas en un solo mensaje.
+    const principales = pendientes.filter((s) => !s.replicaDe);
+    const replicas = pendientes.filter((s) => s.replicaDe);
 
+    const envios = principales.map((s) => ({
+      texto: evaluarAlerta(s, lugar).mensaje,
+      ids: [s.id],
+      etiqueta: `M${s.magnitud}`,
+    }));
+
+    if (replicas.length > 0) {
+      envios.push({
+        texto: mensajeReplicas(replicas, lugar),
+        ids: replicas.map((s) => s.id),
+        etiqueta: `${replicas.length} réplica(s)`,
+      });
+    }
+
+    for (const envio of envios) {
       if (seco) {
-        console.log(`[seco] → ${sus.telefono} (${lugar.nombre}) MMI ${alerta.mmi}`);
-        console.log(alerta.mensaje.replace(/^/gm, "    "));
+        console.log(`[seco] → ${sus.telefono} (${lugar.nombre}) ${envio.etiqueta}`);
+        console.log(envio.texto.replace(/^/gm, "    "), "\n");
       } else {
-        const wamid = await enviarWhatsapp(sus.telefono, alerta.mensaje);
-        console.log(`→ ${sus.telefono} (${lugar.nombre}) MMI ${alerta.mmi} · ${wamid}`);
-        enviados.add(clave);
+        const wamid = await enviarWhatsapp(sus.telefono, envio.texto);
+        console.log(`→ ${sus.telefono} (${lugar.nombre}) ${envio.etiqueta} · ${wamid}`);
+        envio.ids.forEach((id) => enviados.add(`${id}:${sus.telefono}`));
       }
-      resultados.push({ sismo: sismo.id, telefono: sus.telefono, ...alerta });
+      resultados.push({ telefono: sus.telefono, ids: envio.ids, etiqueta: envio.etiqueta });
     }
   }
 

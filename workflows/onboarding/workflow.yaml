@@ -1,6 +1,6 @@
 definition: definition.json
-name: Bienvenida y suscripción a alertas
-slug: bienvenida
+name: Onboarding y suscripción a alertas
+slug: onboarding
 status: draft
 triggers:
   - active: true
