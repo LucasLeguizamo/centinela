@@ -15,6 +15,7 @@ import {
   clasificarReplicas,
   mensajeReplicas,
 } from "./sismos.js";
+import { avisosParaColombia, mensajeTsunami } from "./tsunami.js";
 
 const ejecutar = promisify(execFile);
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -70,11 +71,39 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
   );
   const resultados = [];
 
+  // El tsunami se consulta una vez, no una por suscriptor: es el mismo
+  // boletín para toda la costa.
+  const avisosTsunami = await avisosParaColombia().catch((e) => {
+    // Que el PTWC falle no puede tumbar las alertas sísmicas.
+    console.warn(`PTWC no respondió: ${e.message}`);
+    return [];
+  });
+
   for (const sus of suscriptores) {
     const lugar = normalizarMunicipio(sus.municipio);
     if (!lugar) {
       console.warn(`Municipio desconocido para ${sus.telefono}: ${sus.municipio}`);
       continue;
+    }
+
+    // Tsunami primero y sin agrupar con nada: es el único aviso de este
+    // sistema donde la persona todavía puede moverse a tiempo.
+    if (lugar.costaPacifica) {
+      for (const aviso of avisosTsunami) {
+        const clave = `tsunami:${aviso.boletinUrl}:${sus.telefono}`;
+        if (enviados.has(clave)) continue;
+
+        const texto = mensajeTsunami(aviso, lugar);
+        if (seco) {
+          console.log(`[seco] → ${sus.telefono} (${lugar.nombre}) TSUNAMI ${aviso.categoria}`);
+          console.log(texto.replace(/^/gm, "    "), "\n");
+        } else {
+          const wamid = await enviarWhatsapp(sus.telefono, texto);
+          console.log(`→ ${sus.telefono} (${lugar.nombre}) TSUNAMI ${aviso.categoria} · ${wamid}`);
+          enviados.add(clave);
+        }
+        resultados.push({ telefono: sus.telefono, ids: [clave], etiqueta: "tsunami" });
+      }
     }
 
     // Solo lo que esta persona no ha recibido y de verdad sintió.

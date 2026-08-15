@@ -82,11 +82,19 @@ Todo lo que no sirva a esa frase se corta.
 
 ---
 
+## Hecho después del corte
+
+### US-010 · Aviso de tsunami en el Pacífico ✅
+El único caso de este sistema con ventaja de tiempo real: un sismo de subducción frente a Nariño da entre 20 y 40 minutos antes de que el agua toque Tumaco, y el boletín del PTWC sale en menos de diez.
+
+Fuente: Pacific Tsunami Warning Center (NOAA), feed Atom `PHEBAtom.xml`. Se reenvía solo a suscriptores de costa Pacífica —Tumaco y Buenaventura— y solo cuando el boletín oficial nombra a Colombia entre las costas amenazadas.
+
+---
+
 ## Could — post-hackathon
 
 | ID | Historia | Por qué no ahora |
 |---|---|---|
-| US-010 | Aviso de tsunami en el Pacífico | El caso de uso con más valor real (20–40 min de ventaja), pero necesita otra fuente y validación seria. No se improvisa en 48 h. |
 | US-011 | Botón "estoy bien" a contactos | Bonito, no demuestra la tesis. |
 | US-012 | Ubicación exacta por GPS en vez de municipio | Mejora la precisión de US-003; el municipio alcanza para la demo. |
 

@@ -29,6 +29,7 @@ Todas verificadas en vivo el 15 de agosto de 2026.
 |---|---|---|
 | USGS FDSN | Detección de eventos, latencia 93–186 s | ✅ operativa |
 | EMSC Seismic Portal | Respaldo | ✅ operativa |
+| PTWC / NOAA | Boletines de tsunami del Pacífico | ✅ operativa |
 | SGC `catalogo_sismos` | — | ❌ congelado en dic-2020 |
 
 El Servicio Geológico Colombiano no expone un feed público en tiempo real. Su catálogo ArcGIS tiene 16.290 registros y el último evento es del 30/12/2020; el resto son formularios PHP. Toca USGS + EMSC.
@@ -56,6 +57,7 @@ BACKLOG.md                      Backlog priorizado del hackathon
 src/sismos.js                   Detección USGS + intensidad por ubicación
 src/alertar.js                  Ciclo de alertas (agrupa réplicas)
 src/responder.js                Preguntas de seguimiento
+src/tsunami.js                  Boletines del PTWC para la costa Pacífica
 src/comparar.js                 Un sismo visto desde varias ciudades
 workflows/onboarding/           Flujo de suscripción por WhatsApp
 docs/ONBOARDING.md              Cómo se capta y por qué así
@@ -90,6 +92,7 @@ Tres piezas:
 - **`workflows/onboarding`** — se dispara con cualquier mensaje entrante, ofrece la lista de ciudades y confirma la suscripción. Detalle en [`docs/ONBOARDING.md`](docs/ONBOARDING.md).
 - **`src/alertar.js`** — consulta el USGS, calcula la intensidad en el municipio de cada suscriptor y le escribe solo a quien lo sintió. Agrupa las réplicas en un mensaje.
 - **`src/responder.js`** — contesta las preguntas de seguimiento con datos: *¿qué tan fuerte fue?*, *¿hubo réplicas?*, *cambiar*, *baja*.
+- **`src/tsunami.js`** — vigila los boletines del PTWC y avisa a la costa Pacífica. Es el único aviso del sistema donde la persona todavía puede moverse a tiempo.
 
 ### Verificado de punta a punta
 

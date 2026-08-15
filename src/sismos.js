@@ -24,8 +24,8 @@ export const MUNICIPIOS = {
   bucaramanga: { nombre: "Bucaramanga", lat: 7.119, lon: -73.122 },
   cucuta: { nombre: "Cúcuta", lat: 7.894, lon: -72.508 },
   pasto: { nombre: "Pasto", lat: 1.214, lon: -77.278 },
-  tumaco: { nombre: "Tumaco", lat: 1.789, lon: -78.815 },
-  buenaventura: { nombre: "Buenaventura", lat: 3.884, lon: -77.019 },
+  tumaco: { nombre: "Tumaco", lat: 1.789, lon: -78.815, costaPacifica: true },
+  buenaventura: { nombre: "Buenaventura", lat: 3.884, lon: -77.019, costaPacifica: true },
   monteria: { nombre: "Montería", lat: 8.748, lon: -75.881 },
   cartagena: { nombre: "Cartagena", lat: 10.391, lon: -75.479 },
 };
