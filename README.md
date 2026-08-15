@@ -43,7 +43,7 @@ Probado seis veces contra tres números y cuatro plantillas aprobadas: **toda pl
 Consecuencias de diseño, no negociables:
 
 1. **El onboarding empieza con el usuario escribiendo primero.** Link `wa.me` o QR con mensaje precargado. Captar suscriptores empujándoles el primer mensaje no funciona: no llega ninguno.
-2. **Toda alerta fuera de la ventana de 24 h va por plantilla UTILITY.** Las UTILITY están exentas del tope 131049. `alerta_sismica` está aprobada y verificada en entrega. Ojo: Meta reclasifica — dos plantillas de este mismo proyecto pasaron de UTILITY a MARKETING solas.
+2. **Toda alerta fuera de la ventana de 24 h va por plantilla UTILITY.** Las UTILITY están exentas del tope 131049. Ojo: Meta reclasifica — dos plantillas de este mismo proyecto pasaron de UTILITY a MARKETING solas.
 3. **Dentro de la ventana de 24 h, texto libre y gratis.** Ahí vive la conversación: preguntas, explicaciones, derechos de petición.
 
 ### Costo
@@ -54,18 +54,78 @@ Colombia tiene una de las tarifas más bajas del mundo para plantillas *utility*
 
 ```
 BACKLOG.md                      Backlog priorizado del hackathon
+db/schema.sql                   Esquema de Supabase (idempotente)
+src/db.js                       Persistencia: Supabase o archivos JSON
 src/sismos.js                   Detección USGS + intensidad por ubicación
 src/alertar.js                  Ciclo de alertas (agrupa réplicas)
 src/responder.js                Preguntas de seguimiento
-src/tsunami.js                  Boletines del PTWC para la costa Pacífica
 src/suscribir.js                Sincroniza las suscripciones del onboarding
 src/whatsapp.js                 Envío, plantillas y ventana de 24 h
+src/tsunami.js                  Boletines del PTWC para la costa Pacífica
+src/directorio.js               Las 12 webs ciudadanas, con cobertura por zona
+src/ingesta.js                  Trae los recursos de ayuda de las webs ciudadanas
+src/fuentes/                    Un conector por web ciudadana
+workflows/ayuda/                Menú: quiero ayudar / necesito ayuda
 src/comparar.js                 Un sismo visto desde varias ciudades
 workflows/onboarding/           Flujo de suscripción por WhatsApp
 docs/ONBOARDING.md              Cómo se capta y por qué así
 docs/DEMO.md                    Guion de demo, 3 minutos
 docs/prd-contratacion.html      PRD de contratación pública (parqueado)
 ```
+
+## Dónde llevar la ayuda
+
+Después del sismo aparecieron catorce webs ciudadanas para coordinar la ayuda, cada una con su propio formulario y ninguna hablando con las otras. La pregunta que llega por WhatsApp no es «¿qué webs hay?», es «junté un mercado, ¿dónde lo llevo?».
+
+Centinela responde eso con los datos de esas webs, no con los suyos: `src/ingesta.js` los trae cada media hora y `src/responder.js` contesta con el punto más cercano, qué recibe y cuándo se verificó.
+
+```
+Vos · donde dono
+
+Centinela · Esto es lo que tengo cerca de Pereira:
+
+  *Complejo Bodeguero Alpaca — Bodega 01* ✓
+  _Tigresas de la Patria — «Colombia un solo corazón»_
+  📍 Vía La Romelia – El Pollo, Vereda Santa Ana Baja, Pereira, Risaralda
+  📏 a 6.5 km de vos
+  🕐 8:00 a. m. – 12:00 m. y 2:00 – 6:00 p. m.
+  🔴 Más urgente: Agua potable, Alimentos no perecederos, Elementos de aseo
+  📞 +573105289438
+  Verificado el 12 de ago · emergency-rosy
+```
+
+### Dos puertas, no una lista de diez cosas
+
+Quien viene a dar y quien viene a pedir están en momentos opuestos: al primero le sobra tiempo, al segundo no. Por eso el menú abre con dos botones y no con un listado único, que obligaría al damnificado a leer opciones de donación para llegar a la suya.
+
+**Quiero ayudar** → llevar cosas · donar dinero · donar sangre · ser voluntario · ofrecer alojamiento
+**Necesito ayuda** → buscar a alguien · mascota perdida · dónde dormir · ayuda económica · reportar daños
+
+Los títulos de los botones son exactamente las frases que reconoce el clasificador, así que tocar una fila y escribirla a mano entran por el mismo camino. El workflow solo abre la puerta; la respuesta la compone `src/responder.js`, que sí puede consultar los acopios cercanos.
+
+### La regla: primero un lugar, después una web
+
+Ante cada categoría el bot busca un sitio físico al que puedas ir hoy. Si no hay ninguno cerca, manda a la web **que cubre tu zona**, no a cualquiera: mandar a alguien de Tumaco a una plataforma del Eje Cafetero es peor que no responder.
+
+Y cuando ninguna cubre su zona, lo dice y nombra igual la que existe, con su límite: *"Techo Cafetero — por ahora solo cubre Pereira y Armenia"*. Callárselo dejaría a quien ofrece una habitación en Quibdó creyendo que su ofrecimiento no le sirve a nadie.
+
+Toda respuesta lleva fuente y fecha de verificación. No es adorno: media pregunta que llega es «¿esto es real?», y con campañas falsas circulando por WhatsApp, un dato sin procedencia vale menos que ninguno.
+
+**El bot nunca dicta un número de cuenta.** Ante «¿a qué cuenta consigno?» nombra la organización y manda a su sitio oficial, donde el número lo controla quien recibe la plata. Hay una prueba que falla si alguien agrega uno.
+
+| Fuente | Qué aporta | Estado |
+|---|---|---|
+| [Centros de Acopio Colombia](https://emergency-rosy.vercel.app) | 145 acopios en 27 departamentos, con GPS, horario y qué recibe cada uno | ✅ conectada |
+| [Cuidar a Colombia](https://cuidarcolombia.vercel.app) | 219 registros: donaciones, bancos de sangre, afectación | en el directorio |
+| [Colombia Te Busca](https://colombiatebusca.com) · [Encontrados](https://encontrados.co) | 5.416 y 4.900+ personas reportadas | en el directorio |
+| [Ayuda Colombia](https://ayuda-colombia.vercel.app) | 146 mascotas perdidas, la única que las cubre | en el directorio |
+| [Techo Cafetero](https://techocafetero.app) | Alojamiento temporal en el Eje Cafetero | en el directorio |
+| [Help Them Directly](https://helpthemdirectly.org/es/) · [Colombia Hub](https://colombiahub.org) · [Mapa del Terremoto](https://www.mapadelterremoto.com) · [Mapa de Daños](https://terremotovenezuela.com) · [Colombia Te Amo](https://colombiateamo.com) · [Asocapitales](https://asocapitales.co/terremoto-colombia.html) | Donación directa, diáspora, voluntariado, daños | en el directorio |
+
+*Conectada* = el bot lee sus datos cada media hora y responde con direcciones concretas.
+*En el directorio* = el bot la recomienda según la zona y la necesidad, pero todavía no raspa sus datos.
+
+`recursos` es una sola tabla polimórfica con un `tipo`, y la vista `recursos_unicos` se queda con la fila verificada más reciente por nombre. Ahí está el punto: cuando cinco webs listen el mismo acopio, la gente verá uno.
 
 ## Parqueado
 
@@ -81,23 +141,36 @@ node src/alertar.js --seco         # ciclo de alertas sin enviar nada
 node src/alertar.js                # revisa y envía de verdad
 node src/alertar.js --desde 8000   # reproduce un evento real (para la demo)
 
-node src/suscribir.js --seco       # sincroniza suscripciones del onboarding
-node src/suscribir.js              # las guarda de verdad
-
 node src/responder.js --seco       # clasifica preguntas entrantes, sin enviar
 node src/responder.js              # responde de verdad
 node src/comparar.js --dias 10     # un sismo visto desde varias ciudades
+
+node src/ingesta.js --seco         # extrae los recursos de ayuda, sin guardar
+node src/ingesta.js                # extrae y guarda
+node src/migrar.js                 # data/*.json → Supabase (idempotente)
 
 kapso build                        # compila workflows/**/workflow.ts a JSON
 kapso push                         # publica en Kapso (queda en draft)
 ```
 
-Tres piezas:
+Cinco piezas:
 
 - **`workflows/onboarding`** — se dispara con cualquier mensaje entrante, ofrece la lista de ciudades y confirma la suscripción. Detalle en [`docs/ONBOARDING.md`](docs/ONBOARDING.md).
 - **`src/alertar.js`** — consulta el USGS, calcula la intensidad en el municipio de cada suscriptor y le escribe solo a quien lo sintió. Agrupa las réplicas en un mensaje.
-- **`src/responder.js`** — contesta las preguntas de seguimiento con datos: *¿qué tan fuerte fue?*, *¿hubo réplicas?*, *cambiar*, *baja*.
 - **`src/tsunami.js`** — vigila los boletines del PTWC y avisa a la costa Pacífica. Es el único aviso del sistema donde la persona todavía puede moverse a tiempo.
+- **`src/responder.js`** — contesta con datos: *¿qué tan fuerte fue?*, *¿hubo réplicas?*, *¿dónde dono?*, *¿dónde dono sangre?*, *cambiar*, *baja*.
+- **`src/ingesta.js`** — recorre los conectores de `src/fuentes` y deja los recursos de ayuda al día.
+
+### Persistencia
+
+Sin variables de entorno todo se guarda en `data/*.json` y el repo corre igual que antes. Con `SUPABASE_URL` y `SUPABASE_SERVICE_KEY` se usa Supabase, que es lo que hay que hacer en cuanto esto salga de una máquina:
+
+```bash
+psql "$SUPABASE_DB_URL" -f db/schema.sql
+node src/migrar.js                 # sube los data/*.json que ya existan
+```
+
+No es una preferencia de estilo. En serverless el filesystem es efímero y cada invocación puede caer en otra instancia, así que un suscriptor guardado en una petición puede no existir en la siguiente, y `enviados` —la clave que evita repetir una alerta— se reinicia sola. El fallo es intermitente y silencioso: alguien deja de recibir alertas, o las recibe cinco veces a las 3 de la mañana.
 
 ### Verificado de punta a punta
 

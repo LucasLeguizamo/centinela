@@ -3,11 +3,6 @@
     {
       "label": "next",
       "source": "start",
-      "target": "saludo"
-    },
-    {
-      "label": "next",
-      "source": "saludo",
       "target": "pedir_ciudad"
     },
     {
@@ -37,26 +32,12 @@
     {
       "data": {
         "config": {
-          "message": "Hola 👋 Soy Centinela.\n\nTe aviso cuando tiemble donde estás, y te digo qué tan fuerte se sintió *ahí* — no la magnitud del epicentro, que sola no dice nada.\n\nAntes de seguir, algo honesto: el aviso te llega *después* del temblor, no antes. Nadie puede avisarte antes con datos públicos. Sirve para saber qué pasó, cuánto te tocó, y avisarte de las réplicas."
-        },
-        "node_type": "send_text"
-      },
-      "id": "saludo",
-      "position": {
-        "x": 240,
-        "y": 0
-      },
-      "type": "flow-node"
-    },
-    {
-      "data": {
-        "config": {
-          "body_text": "Elegí tu ciudad para calcular qué tan fuerte se sentiría un sismo ahí.",
-          "footer_text": "Podés cambiarla después escribiendo CAMBIAR",
-          "header_text": "¿Dónde estás?",
+          "body_text": "Te aviso cuando tiemble donde estás, y qué tan fuerte se sintió ahí.\n\nEl aviso llega después del temblor, no antes.\n\n¿En qué ciudad estás?",
+          "footer_text": "Escribí AYUDA si necesitás o querés dar una mano",
+          "header_text": "Centinela",
           "header_type": "text",
           "interactive_type": "list",
-          "list_button_text": "Ver ciudades",
+          "list_button_text": "Elegir ciudad",
           "list_sections": [
             {
               "rows": [
@@ -124,7 +105,7 @@
       },
       "id": "pedir_ciudad",
       "position": {
-        "x": 480,
+        "x": 240,
         "y": 0
       },
       "type": "flow-node"
@@ -139,7 +120,7 @@
       },
       "id": "recibir_ciudad",
       "position": {
-        "x": 720,
+        "x": 480,
         "y": 0
       },
       "type": "flow-node"
@@ -147,13 +128,13 @@
     {
       "data": {
         "config": {
-          "message": "Listo, quedaste suscrito para {{vars.ciudad}} ✅\n\nNo te voy a escribir todos los días. Solo cuando tiemble lo suficiente para sentirse ahí — y si viene una réplica, te la agrupo en un solo mensaje en vez de despertarte cinco veces.\n\nEscribime cuando quieras si querés entender algo. Escribí BAJA para dejar de recibirlas."
+          "message": "Listo ✅ Quedaste suscrito para {{vars.ciudad}}.\n\nSolo te escribo cuando tiemble lo suficiente para sentirse ahí.\n\nAYUDA para el menú · BAJA para dejar de recibir"
         },
         "node_type": "send_text"
       },
       "id": "confirmar",
       "position": {
-        "x": 960,
+        "x": 720,
         "y": 0
       },
       "type": "flow-node"

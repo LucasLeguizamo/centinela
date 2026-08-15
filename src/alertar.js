@@ -3,9 +3,6 @@
 // Corre cada minuto: pregunta al USGS, evalúa la intensidad para cada
 // suscriptor en su municipio, y le escribe solo a quien de verdad lo sintió.
 
-import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import {
   sismosRecientes,
   evaluarAlerta,
@@ -13,29 +10,9 @@ import {
   clasificarReplicas,
   mensajeReplicas,
 } from "./sismos.js";
-import {
-  intensidadEn,
-  describirIntensidad,
-} from "./sismos.js";
 import { avisosParaColombia, mensajeTsunami } from "./tsunami.js";
+import { leerSuscriptores, leerEnviados, marcarEnviados } from "./db.js";
 import { enviarTexto, enviarAlertaSismica, ventanasAbiertas } from "./whatsapp.js";
-
-const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SUSCRIPTORES = join(RAIZ, "data", "suscriptores.json");
-const ENVIADOS = join(RAIZ, "data", "enviados.json");
-
-async function leerJson(ruta, porDefecto) {
-  try {
-    return JSON.parse(await readFile(ruta, "utf8"));
-  } catch {
-    return porDefecto;
-  }
-}
-
-async function escribirJson(ruta, valor) {
-  await mkdir(dirname(ruta), { recursive: true });
-  await writeFile(ruta, JSON.stringify(valor, null, 2));
-}
 
 /** Las cinco variables de la plantilla UTILITY `alerta_sismica`. */
 function plantillaDe(sismo, lugar) {
@@ -49,7 +26,7 @@ function plantillaDe(sismo, lugar) {
 }
 
 export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) {
-  const suscriptores = await leerJson(SUSCRIPTORES, []);
+  const suscriptores = await leerSuscriptores();
   if (suscriptores.length === 0) {
     console.log("No hay suscriptores todavía.");
     return [];
@@ -57,7 +34,8 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
 
   // Clave evento+teléfono: si a alguien ya se le avisó de este sismo, no se
   // le repite aunque el USGS revise la magnitud diez veces (y lo hace).
-  const enviados = new Set(await leerJson(ENVIADOS, []));
+  const enviados = await leerEnviados();
+  const nuevos = [];
   const sismos = clasificarReplicas(
     await sismosRecientes({ desdeMinutos, magnitudMinima: 2.5 })
   );
@@ -94,20 +72,21 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
           console.log(`[seco] → ${sus.telefono} (${lugar.nombre}) TSUNAMI ${aviso.categoria}`);
           console.log(texto.replace(/^/gm, "    "), "\n");
         } else {
-          // No hay plantilla UTILITY de tsunami aprobada todavía, así que
-          // fuera de la ventana se degrada a la de sismo, que sí pasa. Es
-          // peor mandar un aviso imperfecto que no mandarlo.
+          // No hay plantilla UTILITY de tsunami aprobada, así que fuera de
+          // la ventana se degrada a la de sismo, que sí pasa. Es peor mandar
+          // un aviso imperfecto que no mandarlo.
           const wamid = abiertas.has(sus.telefono)
             ? await enviarTexto(sus.telefono, texto)
             : await enviarAlertaSismica(sus.telefono, {
                 magnitud: aviso.magnitud ?? "—",
                 epicentro: `TSUNAMI · ${aviso.region}`,
-                hora: "ver boletín",
+                hora: "ver boletin",
                 profundidad: "—",
-                intensidad: "AMENAZA DE TSUNAMI, subí a terreno alto",
+                intensidad: "AMENAZA DE TSUNAMI, subi a terreno alto",
               });
           console.log(`→ ${sus.telefono} (${lugar.nombre}) TSUNAMI ${aviso.categoria} · ${wamid}`);
           enviados.add(clave);
+          nuevos.push(clave);
         }
         resultados.push({ telefono: sus.telefono, ids: [clave], etiqueta: "tsunami" });
       }
@@ -144,18 +123,22 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
         console.log(`[seco] → ${sus.telefono} (${lugar.nombre}) ${envio.etiqueta}`);
         console.log(envio.texto.replace(/^/gm, "    "), "\n");
       } else {
-        const wamid = abiertas.has(sus.telefono)
+        const abierta = abiertas.has(sus.telefono);
+        const wamid = abierta
           ? await enviarTexto(sus.telefono, envio.texto)
           : await enviarAlertaSismica(sus.telefono, plantillaDe(envio.sismo ?? pendientes[0], lugar));
-        const via = abiertas.has(sus.telefono) ? "texto" : "plantilla";
+        const via = abierta ? "texto" : "plantilla";
         console.log(`→ ${sus.telefono} (${lugar.nombre}) ${envio.etiqueta} · ${via} · ${wamid}`);
-        envio.ids.forEach((id) => enviados.add(`${id}:${sus.telefono}`));
+        envio.ids.forEach((id) => {
+          enviados.add(`${id}:${sus.telefono}`);
+          nuevos.push(`${id}:${sus.telefono}`);
+        });
       }
       resultados.push({ telefono: sus.telefono, ids: envio.ids, etiqueta: envio.etiqueta });
     }
   }
 
-  if (!seco) await escribirJson(ENVIADOS, [...enviados]);
+  if (!seco) await marcarEnviados(nuevos);
   if (resultados.length === 0) console.log("Nada que alertar.");
   return resultados;
 }
