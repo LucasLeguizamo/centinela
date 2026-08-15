@@ -25,12 +25,18 @@ create extension if not exists unaccent;
 -- `set search_path` fijo cierra el aviso de seguridad de que una función sin
 -- search_path fijo es secuestrable por un rol que cree un objeto con el mismo
 -- nombre en un schema anterior en la resolución.
+--
+-- Tiene que incluir `extensions`, no solo `public`: en Supabase las
+-- extensiones se instalan en el schema `extensions`, y `create extension if
+-- not exists` no las mueve si ya estaban ahí. Con el search_path fijado solo
+-- a `public`, la llamada a unaccent() de abajo deja de resolver y la columna
+-- generada `recursos.clave` falla al crearse.
 create or replace function immutable_unaccent(text)
 returns text
 language plpgsql
 immutable
 parallel safe
-set search_path = 'public'
+set search_path = public, extensions
 as $$
 begin
   return unaccent('unaccent', $1);
@@ -82,7 +88,7 @@ returns text
 language plpgsql
 immutable
 parallel safe
-set search_path = 'public'
+set search_path = public, extensions
 as $$
 begin
   return $1::text;
@@ -172,8 +178,13 @@ returns table (
   fuente text, fuente_url text, verificado boolean, verificado_en timestamptz,
   distancia_km double precision
 )
+-- `extensions` en el search_path no es opcional acá: st_point, st_distance,
+-- st_dwithin, el tipo `geography` y el operador `<->` son de PostGIS, que en
+-- Supabase vive en ese schema. Sin él esta función revienta en tiempo de
+-- ejecución — y es la que responde "¿dónde hay un acopio cerca?" a un
+-- damnificado, así que el fallo caería en el peor momento posible.
 language sql stable
-set search_path = 'public'
+set search_path = public, extensions
 as $$
   select r.nombre, r.descripcion, r.direccion, r.municipio,
          r.telefono, r.horario, r.acepta, r.urgente,
