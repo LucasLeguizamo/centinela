@@ -59,6 +59,8 @@ src/db.js                       Persistencia: Supabase o archivos JSON
 src/sismos.js                   Detección USGS + intensidad por ubicación
 src/alertar.js                  Ciclo de alertas (agrupa réplicas)
 src/responder.js                Preguntas de seguimiento
+src/suscribir.js                Sincroniza las suscripciones del onboarding
+src/whatsapp.js                 Envío, plantillas y ventana de 24 h
 src/tsunami.js                  Boletines del PTWC para la costa Pacífica
 src/directorio.js               Las 12 webs ciudadanas, con cobertura por zona
 src/ingesta.js                  Trae los recursos de ayuda de las webs ciudadanas

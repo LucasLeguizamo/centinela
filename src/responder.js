@@ -7,9 +7,6 @@
 //   node src/responder.js --seco    → clasifica y muestra, sin enviar
 //   node src/responder.js           → responde de verdad
 
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-import { join } from "node:path";
 import {
   sismosRecientes,
   clasificarReplicas,
@@ -25,6 +22,7 @@ import {
   marcarRespondidos,
   buscarRecursos,
 } from "./db.js";
+import { enviarTexto, entrantes } from "./whatsapp.js";
 import {
   MENUS,
   ORGANIZACIONES,
@@ -35,10 +33,6 @@ import {
   describirCobertura,
 } from "./directorio.js";
 
-const ejecutar = promisify(execFile);
-
-const PHONE_NUMBER_ID = "1243233552205505";
-const KAPSO = join(process.env.HOME, "Library", "pnpm", "kapso");
 
 function sinAcentos(texto) {
   return texto.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -423,34 +417,10 @@ export async function componerRespuesta(intencion, lugar, texto = "") {
   );
 }
 
-async function enviarWhatsapp(telefono, texto) {
-  const { stdout } = await ejecutar(KAPSO, [
-    "whatsapp", "messages", "send",
-    "--phone-number-id", PHONE_NUMBER_ID,
-    "--to", telefono,
-    "--text", texto,
-    "--output", "json",
-  ]);
-  return JSON.parse(stdout).messages?.[0]?.id;
-}
-
-async function entrantesRecientes(horas = 24) {
-  const desde = new Date(Date.now() - horas * 3_600_000).toISOString();
-  const { stdout } = await ejecutar(KAPSO, [
-    "whatsapp", "messages", "list",
-    "--phone-number-id", PHONE_NUMBER_ID,
-    "--direction", "inbound",
-    "--since", desde,
-    "--limit", "50",
-    "--output", "json",
-  ]);
-  return JSON.parse(stdout).data ?? [];
-}
-
 export async function atenderPreguntas({ seco = false } = {}) {
   const suscriptores = await leerSuscriptores();
   const respondidos = await leerRespondidos();
-  const mensajes = await entrantesRecientes();
+  const mensajes = await entrantes(24);
 
   const nuevos = [];
   let atendidos = 0;
@@ -476,7 +446,7 @@ export async function atenderPreguntas({ seco = false } = {}) {
       console.log(`[seco] ${m.from} · "${texto}" → ${intencion}`);
       console.log(respuesta.replace(/^/gm, "    "), "\n");
     } else {
-      const wamid = await enviarWhatsapp(m.from, respuesta);
+      const wamid = await enviarTexto(m.from, respuesta);
       console.log(`→ ${m.from} · "${texto}" → ${intencion} · ${wamid}`);
       respondidos.add(m.id);
       nuevos.push(m.id);

@@ -3,9 +3,6 @@
 // Corre cada minuto: pregunta al USGS, evalúa la intensidad para cada
 // suscriptor en su municipio, y le escribe solo a quien de verdad lo sintió.
 
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-import { join } from "node:path";
 import {
   sismosRecientes,
   evaluarAlerta,
@@ -15,28 +12,17 @@ import {
 } from "./sismos.js";
 import { avisosParaColombia, mensajeTsunami } from "./tsunami.js";
 import { leerSuscriptores, leerEnviados, marcarEnviados } from "./db.js";
+import { enviarTexto, enviarAlertaSismica, ventanasAbiertas } from "./whatsapp.js";
 
-const ejecutar = promisify(execFile);
-
-// Número "Melo". Producción, CONNECTED, verificado.
-const PHONE_NUMBER_ID = "1243233552205505";
-const KAPSO = join(process.env.HOME, "Library", "pnpm", "kapso");
-
-/**
- * ponytail: el envío va por el CLI de Kapso en vez de su API HTTP. Reusa la
- * sesión ya autenticada y no mete un token más en el repo. El techo es obvio
- * —un proceso por mensaje, no aguanta miles de suscriptores— y el día que
- * estorbe se cambia por un POST a la API con una API key.
- */
-async function enviarWhatsapp(telefono, texto) {
-  const { stdout } = await ejecutar(KAPSO, [
-    "whatsapp", "messages", "send",
-    "--phone-number-id", PHONE_NUMBER_ID,
-    "--to", telefono,
-    "--text", texto,
-    "--output", "json",
-  ]);
-  return JSON.parse(stdout).messages?.[0]?.id;
+/** Las cinco variables de la plantilla UTILITY `alerta_sismica`. */
+function plantillaDe(sismo, lugar) {
+  return {
+    magnitud: sismo.magnitud,
+    epicentro: sismo.lugar,
+    hora: sismo.hora.toLocaleTimeString("es-CO", { timeZone: "America/Bogota" }),
+    profundidad: Math.round(sismo.profundidadKm),
+    intensidad: describirIntensidad(intensidadEn(sismo, lugar)).etiqueta,
+  };
 }
 
 export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) {
@@ -54,6 +40,10 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
     await sismosRecientes({ desdeMinutos, magnitudMinima: 2.5 })
   );
   const resultados = [];
+
+  // Quién tiene la ventana de 24 h abierta. Fuera de ella solo pasa la
+  // plantilla UTILITY aprobada.
+  const abiertas = await ventanasAbiertas();
 
   // El tsunami se consulta una vez, no una por suscriptor: es el mismo
   // boletín para toda la costa.
@@ -82,7 +72,18 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
           console.log(`[seco] → ${sus.telefono} (${lugar.nombre}) TSUNAMI ${aviso.categoria}`);
           console.log(texto.replace(/^/gm, "    "), "\n");
         } else {
-          const wamid = await enviarWhatsapp(sus.telefono, texto);
+          // No hay plantilla UTILITY de tsunami aprobada, así que fuera de
+          // la ventana se degrada a la de sismo, que sí pasa. Es peor mandar
+          // un aviso imperfecto que no mandarlo.
+          const wamid = abiertas.has(sus.telefono)
+            ? await enviarTexto(sus.telefono, texto)
+            : await enviarAlertaSismica(sus.telefono, {
+                magnitud: aviso.magnitud ?? "—",
+                epicentro: `TSUNAMI · ${aviso.region}`,
+                hora: "ver boletin",
+                profundidad: "—",
+                intensidad: "AMENAZA DE TSUNAMI, subi a terreno alto",
+              });
           console.log(`→ ${sus.telefono} (${lugar.nombre}) TSUNAMI ${aviso.categoria} · ${wamid}`);
           enviados.add(clave);
           nuevos.push(clave);
@@ -104,6 +105,7 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
 
     const envios = principales.map((s) => ({
       texto: evaluarAlerta(s, lugar).mensaje,
+      sismo: s,
       ids: [s.id],
       etiqueta: `M${s.magnitud}`,
     }));
@@ -111,6 +113,9 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
     if (replicas.length > 0) {
       envios.push({
         texto: mensajeReplicas(replicas, lugar),
+        // La mayor representa al grupo en la plantilla: fuera de la ventana
+        // de 24 h solo cabe un sismo, y el que importa es el más fuerte.
+        sismo: replicas.reduce((a, b) => (b.magnitud > a.magnitud ? b : a)),
         ids: replicas.map((s) => s.id),
         etiqueta: `${replicas.length} réplica(s)`,
       });
@@ -121,8 +126,12 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
         console.log(`[seco] → ${sus.telefono} (${lugar.nombre}) ${envio.etiqueta}`);
         console.log(envio.texto.replace(/^/gm, "    "), "\n");
       } else {
-        const wamid = await enviarWhatsapp(sus.telefono, envio.texto);
-        console.log(`→ ${sus.telefono} (${lugar.nombre}) ${envio.etiqueta} · ${wamid}`);
+        const abierta = abiertas.has(sus.telefono);
+        const wamid = abierta
+          ? await enviarTexto(sus.telefono, envio.texto)
+          : await enviarAlertaSismica(sus.telefono, plantillaDe(envio.sismo, lugar));
+        const via = abierta ? "texto" : "plantilla";
+        console.log(`→ ${sus.telefono} (${lugar.nombre}) ${envio.etiqueta} · ${via} · ${wamid}`);
         envio.ids.forEach((id) => {
           enviados.add(`${id}:${sus.telefono}`);
           nuevos.push(`${id}:${sus.telefono}`);

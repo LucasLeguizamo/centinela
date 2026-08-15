@@ -1,0 +1,523 @@
+<title>Centinela · Estado</title>
+<style>
+  :root {
+    --paper:   #EFF1F0;
+    --surface: #FFFFFF;
+    --ink:     #12161A;
+    --mid:     #58636D;
+    --faint:   #838D96;
+    --rule:    #D2D7D6;
+    --rule-hard:#A6ADAD;
+    --accent:  #0E6B6E;
+    --accent-soft: #DCE9E8;
+    --ok:      #2C6B4F;
+    --warn:    #8A6116;
+    --alto:    #B03A1E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:   #0E1113;
+      --surface: #161A1D;
+      --ink:     #E7E6E2;
+      --mid:     #9BA5AD;
+      --faint:   #78828A;
+      --rule:    #272D31;
+      --rule-hard:#3D4549;
+      --accent:  #4FBEB8;
+      --accent-soft: #14282A;
+      --ok:      #6FB68E;
+      --warn:    #C79B41;
+      --alto:    #E0705A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:   #0E1113;
+    --surface: #161A1D;
+    --ink:     #E7E6E2;
+    --mid:     #9BA5AD;
+    --faint:   #78828A;
+    --rule:    #272D31;
+    --rule-hard:#3D4549;
+    --accent:  #4FBEB8;
+    --accent-soft: #14282A;
+    --ok:      #6FB68E;
+    --warn:    #C79B41;
+    --alto:    #E0705A;
+  }
+
+  :root {
+    --mono: ui-monospace, "SF Mono", "Menlo", "Consolas", "Liberation Mono", monospace;
+    --serif: "Charter", "Bitstream Charter", "Sitka Text", Georgia, "Times New Roman", serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 20px 110px;
+  }
+
+  .sheet { max-width: 1020px; margin: 0 auto; }
+
+  /* ---------- masthead ---------- */
+
+  .masthead { padding: 68px 0 26px; border-bottom: 2px solid var(--ink); }
+
+  .stamp {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex; flex-wrap: wrap; gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stamp span { color: var(--faint); }
+
+  .masthead h1 {
+    font-family: var(--mono);
+    font-size: clamp(36px, 6.5vw, 62px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.03;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  .deck {
+    font-size: 20px; line-height: 1.5; color: var(--mid);
+    max-width: 60ch; margin: 0;
+  }
+
+  /* ---------- state strip ---------- */
+
+  .estado {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+    border-top: 1px solid var(--rule-hard);
+    border-left: 1px solid var(--rule-hard);
+    margin: 34px 0 0;
+  }
+  .estado > div {
+    border-right: 1px solid var(--rule-hard);
+    border-bottom: 1px solid var(--rule-hard);
+    padding: 15px 17px;
+    background: var(--surface);
+  }
+  .estado b {
+    font-family: var(--mono); font-size: 25px; font-weight: 600;
+    line-height: 1.1; font-variant-numeric: tabular-nums; display: block;
+  }
+  .estado small {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.11em;
+    text-transform: uppercase; color: var(--mid);
+    display: block; margin-top: 6px; line-height: 1.5;
+  }
+
+  /* ---------- sections ---------- */
+
+  section {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 0 30px;
+    padding: 44px 0 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+  section:last-of-type { border-bottom: none; }
+
+  .rail {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em;
+    color: var(--accent); padding-top: 6px;
+  }
+  .rail small {
+    display: block; color: var(--faint); letter-spacing: 0.12em;
+    text-transform: uppercase; font-size: 10px; margin-top: 8px; line-height: 1.5;
+  }
+
+  .body > *:first-child { margin-top: 0; }
+
+  h2 {
+    font-family: var(--mono); font-size: 24px; font-weight: 600;
+    letter-spacing: -0.01em; line-height: 1.2; margin: 0 0 18px;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    letter-spacing: 0.13em; text-transform: uppercase; color: var(--mid);
+    margin: 32px 0 12px;
+  }
+  p { margin: 0 0 15px; max-width: 68ch; }
+  ul, ol { margin: 0 0 15px; padding-left: 21px; max-width: 68ch; }
+  li { margin-bottom: 7px; }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  code {
+    font-family: var(--mono); font-size: 0.85em;
+    background: var(--accent-soft); padding: 1px 5px; color: var(--ink);
+  }
+
+  .lede {
+    font-size: 19px; line-height: 1.55;
+    border-left: 3px solid var(--accent); padding-left: 17px; margin-bottom: 22px;
+  }
+
+  /* ---------- tables ---------- */
+
+  .scroll { overflow-x: auto; margin: 0 0 19px; }
+  table {
+    border-collapse: collapse; width: 100%; min-width: 500px;
+    font-family: var(--mono); font-size: 13px; line-height: 1.45;
+  }
+  caption {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--faint);
+    text-align: left; padding-bottom: 8px;
+  }
+  th {
+    text-align: left; font-weight: 600; font-size: 10px;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid);
+    border-bottom: 1px solid var(--rule-hard);
+    padding: 0 13px 7px 0; vertical-align: bottom;
+  }
+  td {
+    padding: 9px 13px 9px 0; border-bottom: 1px solid var(--rule);
+    vertical-align: top; color: var(--ink);
+  }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; padding-right: 0; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .tag {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.09em;
+    text-transform: uppercase; padding: 2px 7px;
+    border: 1px solid currentColor; white-space: nowrap;
+  }
+  .tag.ok   { color: var(--ok); }
+  .tag.pend { color: var(--warn); }
+  .tag.no   { color: var(--faint); }
+  .tag.stop { color: var(--alto); }
+
+  /* intensity ramp — semantic, deliberately separate from the accent */
+  .mmi { font-variant-numeric: tabular-nums; }
+  .i-alta  { color: var(--alto); font-weight: 700; }
+  .i-media { color: var(--warn); }
+  .i-baja  { color: var(--mid); }
+  .i-nula  { color: var(--faint); }
+
+  .callout {
+    border: 1px solid var(--rule-hard); background: var(--surface);
+    padding: 19px 21px; margin: 0 0 21px;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent);
+    display: block; margin-bottom: 9px;
+  }
+  .callout.alto { border-color: var(--alto); }
+  .callout.alto .callout-label { color: var(--alto); }
+
+  .burbuja {
+    border: 1px solid var(--rule-hard); background: var(--surface);
+    padding: 13px 16px; margin: 0 0 19px; max-width: 430px;
+    font-size: 15px; line-height: 1.5;
+  }
+  .burbuja b { display: block; margin: 8px 0; }
+
+  .cols {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+    gap: 0 32px;
+  }
+  .cols ul { max-width: none; }
+
+  footer {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.11em;
+    text-transform: uppercase; color: var(--faint);
+    border-top: 2px solid var(--ink); padding-top: 17px; margin-top: 50px;
+    display: flex; flex-wrap: wrap; gap: 18px; justify-content: space-between;
+  }
+
+  @media (max-width: 720px) {
+    body { font-size: 16px; }
+    section { grid-template-columns: 1fr; gap: 0; padding-top: 36px; }
+    .rail { padding-bottom: 13px; }
+    .rail small { display: inline; margin-left: 10px; }
+    .masthead { padding-top: 46px; }
+  }
+</style>
+
+<div class="sheet">
+
+<header class="masthead">
+  <div class="stamp">Síntesis <span>·</span> 15 ago 2026 <span>·</span> Hackathon</div>
+  <h1>Centinela</h1>
+  <p class="deck">
+    Alertas sísmicas por WhatsApp para quien el teléfono no avisa. El sistema completo corre
+    y está verificado contra teléfonos reales. Lo que queda son decisiones, no código.
+  </p>
+  <div class="estado">
+    <div><b>10/10</b><small>Historias del backlog</small></div>
+    <div><b>5</b><small>Suites de test</small></div>
+    <div><b>4</b><small>Mensajes entregados</small></div>
+    <div><b>3</b><small>PRs abiertos</small></div>
+  </div>
+</header>
+
+<section>
+  <div class="rail">§1<small>Qué es</small></div>
+  <div class="body">
+    <h2>El hueco que llena</h2>
+    <p class="lede">
+      El 10 de agosto de 2026 un M7.4 sacudió Colombia. Los Android sonaron segundos antes.
+      Los iPhone no sonaron.
+    </p>
+    <p>
+      No fue una falla: <strong>Apple solo opera alertas sísmicas en Estados Unidos y Taiwán.</strong>
+      Google avisa en ~98 países porque los propios teléfonos Android son su red de sensores.
+      Quien tiene un iPhone en Colombia no tiene nada.
+    </p>
+    <p>
+      Centinela llena ese hueco por el único canal que todo el mundo ya tiene abierto. Y hace algo
+      que ningún sistema hace hoy: dice qué tan fuerte se sintió <em>donde estás</em>, no la magnitud
+      del epicentro.
+    </p>
+
+    <h3>La tesis, en una tabla</h3>
+    <p>El mismo M7.4, visto desde siete ciudades. Un evento, siete mensajes distintos:</p>
+    <div class="scroll">
+      <table>
+        <caption>M7.4 · San José del Palmar, Chocó · 110 km de profundidad</caption>
+        <thead>
+          <tr><th>Ciudad</th><th class="num">Dist.</th><th class="num">MMI</th><th>Se sintió</th><th>¿Avisa?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Pereira</td><td class="num">126 km</td><td class="num mmi i-alta">5.1</td><td class="i-alta">fuerte</td><td>sí</td></tr>
+          <tr><td>Manizales</td><td class="num">139 km</td><td class="num mmi i-media">5.0</td><td class="i-media">moderado</td><td>sí</td></tr>
+          <tr><td>Quibdó</td><td class="num">152 km</td><td class="num mmi i-media">4.8</td><td class="i-media">moderado</td><td>sí</td></tr>
+          <tr><td>Cali</td><td class="num">193 km</td><td class="num mmi i-media">4.4</td><td class="i-media">moderado</td><td>sí</td></tr>
+          <tr><td>Medellín</td><td class="num">204 km</td><td class="num mmi i-media">4.3</td><td class="i-media">moderado</td><td>sí</td></tr>
+          <tr><td>Bogotá</td><td class="num">265 km</td><td class="num mmi i-baja">3.9</td><td class="i-baja">leve</td><td>sí</td></tr>
+          <tr><td>Barranquilla</td><td class="num">708 km</td><td class="num mmi i-nula">2.0</td><td class="i-nula">apenas perceptible</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Barranquilla queda en silencio, que es la respuesta correcta. Esa columna de intensidades es
+      el producto entero: si se cae, Centinela es un feed de noticias.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§2<small>Camino</small></div>
+  <div class="body">
+    <h2>Cómo llegamos acá</h2>
+    <p>
+      El proyecto empezó apuntando al Track 01 de transparencia: detectar corrupción en la
+      contratación pública del SECOP II. Ese frente llegó a tener PRD completo y cuatro señales de
+      riesgo validadas contra datos reales — entre ellas que <strong>596.080 de los 743.000 contratos
+      de 2026 son contratación directa</strong>, la modalidad sin competencia, por $610 billones.
+    </p>
+    <p>
+      El pivote a sismos vino del 10 de agosto. Quedó <strong>parqueado, no muerto</strong>:
+      el PRD sigue en <code>docs/prd-contratacion.html</code> con todo lo verificado.
+    </p>
+    <p>
+      Después el repo creció en paralelo con un <strong>menú de ayuda</strong> — <em>quiero
+      ayudar / necesito ayuda</em> — con directorio de webs ciudadanas, scraping de centros de
+      acopio y base de datos en Supabase. Ese trabajo no fue mío y ya está en <code>main</code>.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§3<small>Construido</small></div>
+  <div class="body">
+    <h2>Qué corre hoy</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Pieza</th><th>Qué hace</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td><code>sismos.js</code></td><td>Detección USGS + intensidad Mercalli en la ubicación del suscriptor</td><td><span class="tag ok">verificado</span></td></tr>
+          <tr><td><code>alertar.js</code></td><td>Ciclo completo. Agrupa réplicas, elige texto o plantilla según la ventana</td><td><span class="tag ok">verificado</span></td></tr>
+          <tr><td><code>responder.js</code></td><td>Contesta preguntas con datos · 49 frases clasificadas</td><td><span class="tag ok">verificado</span></td></tr>
+          <tr><td><code>tsunami.js</code></td><td>Boletines del PTWC para la costa Pacífica</td><td><span class="tag ok">verificado</span></td></tr>
+          <tr><td><code>suscribir.js</code></td><td>Sincroniza suscripciones del onboarding a la base</td><td><span class="tag pend">en PR #3</span></td></tr>
+          <tr><td><code>whatsapp.js</code></td><td>Envío, plantillas UTILITY y ventana de 24 h</td><td><span class="tag pend">en PR #3</span></td></tr>
+          <tr><td><code>db.js</code></td><td>Supabase o JSON según entorno</td><td><span class="tag ok">en main</span></td></tr>
+          <tr><td><code>workflows/onboarding</code></td><td>Un mensaje, lista de ciudades, confirmación</td><td><span class="tag ok">activo</span></td></tr>
+          <tr><td><code>workflows/ayuda</code></td><td>Menú de dos puertas: dar y pedir</td><td><span class="tag ok">en main</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Verificado en vivo, no en teoría</h3>
+    <p>Cuatro mensajes entregados a teléfonos reales durante la construcción:</p>
+    <div class="burbuja">
+      ⚠️ Sismo M7.4 detectado<br>
+      📍 5 km S of San José del Palmar, Colombia<br>
+      🕐 7:34 a. m. · 110 km de profundidad
+      <b>En Quibdó se sintió moderado</b>
+      Fuente: USGS
+    </div>
+    <p>
+      Y el onboarding se completó solo: dos personas eligieron ciudad de la lista interactiva sin
+      que nadie las guiara. Alguien más preguntó <em>"¿cómo hacer un arroz con pollo?"</em> — el
+      sistema lo ignoró, que también es la respuesta correcta.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§4<small>Honestidad</small></div>
+  <div class="body">
+    <h2>Lo que no promete</h2>
+    <div class="callout alto">
+      <span class="callout-label">La línea que no se cruza</span>
+      <p>
+        <strong>Centinela no es alerta temprana.</strong> El USGS publica un evento entre 93 y 186
+        segundos después del origen. La onda destructiva llega a Cali desde el Chocó en 43 segundos,
+        a Medellín en 51, a Bogotá en 100.
+      </p>
+      <p>
+        La alerta llega siempre <em>después</em> del temblor. Prometer lo contrario hace que alguien
+        se confíe y no reaccione — no es imprecisión de marketing, es la diferencia entre una
+        herramienta honesta y una que mata a quien confía en ella. La advertencia va en el primer
+        mensaje del onboarding.
+      </p>
+    </div>
+    <p>Lo que sí aporta valor, en orden de ventaja de tiempo:</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Caso</th><th>Ventaja</th><th>Por qué importa</th></tr></thead>
+        <tbody>
+          <tr><td>Tsunami en el Pacífico</td><td>20–40 min</td><td>Único caso donde la latencia es irrelevante y salva vidas</td></tr>
+          <tr><td>Réplicas</td><td>sí</td><td>Tras el M7.4 vinieron M5.0, M4.3, M4.2. La gente duerme en la calle días</td></tr>
+          <tr><td>Confirmación</td><td>ninguna</td><td>Corta el pánico y la desinformación cuando las redes colapsan</td></tr>
+          <tr><td>Intensidad personalizada</td><td>—</td><td>Nadie más lo hace</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§5<small>Canal</small></div>
+  <div class="body">
+    <h2>La restricción que definió la arquitectura</h2>
+    <p class="lede">
+      WhatsApp no deja empujar el primer mensaje. Seis intentos, tres números, cuatro plantillas
+      aprobadas. Los seis rebotaron.
+    </p>
+    <p>
+      Toda plantilla de categoría <strong>MARKETING</strong> hacia alguien que nunca le escribió al
+      negocio falla con <code>131049</code>. No hay parámetro que lo evite: la condición de
+      desbloqueo es un mensaje entrante de esa persona.
+    </p>
+    <div class="cols">
+      <div>
+        <h3>Lo que se sigue de ahí</h3>
+        <ul>
+          <li>La captación <strong>empieza con la persona escribiendo</strong>: link <code>wa.me</code> o QR</li>
+          <li>Fuera de la ventana de 24 h, solo plantillas UTILITY</li>
+          <li>Dentro de la ventana: texto libre, inmediato y gratis</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Costo</h3>
+        <ul>
+          <li>Colombia tiene la tarifa <em>utility</em> más baja del mundo</li>
+          <li><strong>US$0,0008</strong> por mensaje entregado</li>
+          <li>Diez mil alertas: ocho dólares</li>
+          <li>El canal no es el costo del producto</li>
+        </ul>
+      </div>
+    </div>
+    <p>
+      <code>alerta_sismica</code> ya está aprobada como UTILITY y verificada en entrega. Ojo: Meta
+      reclasifica plantillas sola — dos de este proyecto pasaron de UTILITY a MARKETING y quedaron
+      bloqueadas.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§6<small>Pendiente</small></div>
+  <div class="body">
+    <h2>Lo que falta</h2>
+    <h3>Pull requests</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>PR</th><th>Qué trae</th><th>Acción</th></tr></thead>
+        <tbody>
+          <tr><td>#3</td><td>Suscripciones persistentes + plantilla UTILITY + mensaje inicial corto</td><td><span class="tag ok">listo para mergear</span></td></tr>
+          <tr><td>#4</td><td>Catálogo de fuentes scrapeadas</td><td><span class="tag no">cerrar · duplica #6</span></td></tr>
+          <tr><td>#6</td><td>Esquema Supabase y parseo de respuestas vacías</td><td><span class="tag stop">arreglar search_path</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout alto">
+      <span class="callout-label">Hallazgo de la revisión</span>
+      <p>
+        El PR #6 fija <code>set search_path = 'public'</code> en <code>recursos_cerca</code>. En
+        Supabase, PostGIS vive en el schema <code>extensions</code> — con ese search_path la función
+        deja de resolver <code>st_point</code>, <code>st_distance</code>, <code>st_dwithin</code> y
+        el tipo <code>geography</code>.
+      </p>
+      <p>
+        Es la función que responde <em>"¿dónde hay un acopio cerca?"</em> a un damnificado, y
+        <strong>ningún test lo cubre</strong>: la suite corre sobre los JSON sin tocar Postgres.
+        Se arregla con <code>set search_path = public, extensions</code>.
+      </p>
+    </div>
+
+    <h3>Bloqueado en decisiones, no en código</h3>
+    <ul>
+      <li>Cerrar #4, corregir y mergear #6, mergear #3</li>
+      <li>Meta apruebe <code>alerta_sismica_v2</code> — la v1 atribuye al SGC, que no se usa</li>
+      <li>Escribir el guion final sobre <code>docs/DEMO.md</code> y <strong>grabar el video de respaldo</strong></li>
+    </ul>
+
+    <h3>Puntos ciegos conocidos</h3>
+    <ul>
+      <li><strong>Todo Postgres</strong> — RLS, columnas generadas, funciones PostGIS: sin cobertura</li>
+      <li><strong>Los workflows de Kapso</strong> — solo compilan; el flujo se prueba escribiéndole al número</li>
+      <li><strong>Cobertura geográfica</strong> — 10 ciudades de 1.100 municipios. Se sube pidiendo ubicación por GPS</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§7<small>Equipo</small></div>
+  <div class="body">
+    <h2>El set de expertos</h2>
+    <p>
+      Cinco agentes en <code>.claude/agents/</code>, cargados con lo que este proyecto verificó —
+      no con teoría. Cada uno lleva las trampas que ya costaron tiempo, para que nadie las
+      redescubra desde cero.
+    </p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Experto</th><th>Dominio</th><th>Lo que evita</th></tr></thead>
+        <tbody>
+          <tr><td><code>sismologia</code></td><td>Intensidad, fuentes, umbrales, réplicas, tsunami</td><td>Que alguien prometa alerta temprana</td></tr>
+          <tr><td><code>whatsapp</code></td><td>Meta, Kapso, plantillas, ventana de 24 h</td><td>Volver a chocar con el 131049</td></tr>
+          <tr><td><code>datos</code></td><td>Supabase, PostGIS, RLS, conectores</td><td>El <code>search_path</code> y la inmutabilidad</td></tr>
+          <tr><td><code>mensajes</code></td><td>Texto que ve una persona asustada</td><td>Promesas que el sistema no cumple</td></tr>
+          <tr><td><code>qa</code></td><td>Suites sin framework, puntos ciegos, demo</td><td>Cobertura de teatro</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>Centinela · síntesis de estado</div>
+  <div>Todo verificado contra APIs y teléfonos reales · 15 ago 2026</div>
+</footer>
+
+</div>
