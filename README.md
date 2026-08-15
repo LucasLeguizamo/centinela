@@ -1,19 +1,10 @@
 # Centinela
 
-Alertas ciudadanas por WhatsApp sobre lo que el Estado publica pero nadie lee.
+Alertas sísmicas por WhatsApp para quien el teléfono no avisa.
 
-Colombia publica en datos abiertos cada contrato estatal y cada sismo detectado. El problema nunca fue el acceso: fue que el dato es *pull* y la atención humana es *push*. Centinela invierte la carga — vigila las fuentes oficiales y le escribe al ciudadano cuando algo le afecta.
+El 10 de agosto de 2026 un M7.4 sacudió Colombia con epicentro en San José del Palmar, Chocó. Los Android sonaron segundos antes. Los iPhone no sonaron: **Apple solo opera alertas sísmicas en Estados Unidos y Taiwán.**
 
-Dos frentes:
-
-- **Contratación pública.** Detecta señales de riesgo en los contratos del SECOP II y avisa cuando aparecen en tu municipio.
-- **Sismos.** Confirmación, réplicas y aviso de tsunami para quien no tiene alertas nativas — es decir, todo usuario de iPhone en Colombia.
-
-## Por qué existe
-
-**Contratación:** de los 743.000 contratos firmados en 2026, **596.080 son contratación directa** — la modalidad sin competencia — por $610 billones de pesos. La licitación pública, el mecanismo competitivo por excelencia, son 1.089 contratos: el 0,15%. El dato está publicado. Nadie lo mira.
-
-**Sismos:** el 10 de agosto de 2026 un M7.4 sacudió Colombia con epicentro en San José del Palmar, Chocó. Los Android sonaron segundos antes. Los iPhone no sonaron. Apple solo opera alertas sísmicas en Estados Unidos y Taiwán.
+Centinela llena ese hueco por el único canal que todo el mundo ya tiene abierto. Y hace algo que ningún sistema hace hoy: te dice qué tan fuerte se sintió **donde vos estás**, no la magnitud en el epicentro.
 
 ## Lo que sí hace y lo que no
 
@@ -36,18 +27,11 @@ Todas verificadas en vivo el 15 de agosto de 2026.
 
 | Fuente | Uso | Estado |
 |---|---|---|
-| `datos.gov.co` `jbjy-vk9h` | Contratos SECOP II, 85 columnas | ✅ operativa |
-| `datos.gov.co` `cb9c-h8sn` | Adiciones y prórrogas | ✅ operativa |
-| `datos.gov.co` `p6dx-8zbt` | Procesos: precio base vs adjudicado | ✅ operativa |
-| USGS FDSN | Sismos, latencia 93–186 s | ✅ operativa |
-| EMSC Seismic Portal | Sismos, respaldo | ✅ operativa |
+| USGS FDSN | Detección de eventos, latencia 93–186 s | ✅ operativa |
+| EMSC Seismic Portal | Respaldo | ✅ operativa |
 | SGC `catalogo_sismos` | — | ❌ congelado en dic-2020 |
 
 El Servicio Geológico Colombiano no expone un feed público en tiempo real. Su catálogo ArcGIS tiene 16.290 registros y el último evento es del 30/12/2020; el resto son formularios PHP. Toca USGS + EMSC.
-
-### Trampa conocida
-
-El campo `ultima_actualizacion` del SECOP viene vacío en buena parte de los registros y no sirve como cursor. La sincronización va por `fecha_de_firma` con una ventana de re-escaneo de 30 días hacia atrás, porque el SECOP recibe cargas retroactivas. Sin esa ventana se pierden contratos.
 
 ## La restricción que define la arquitectura
 
@@ -68,10 +52,15 @@ Colombia tiene una de las tarifas más bajas del mundo para plantillas *utility*
 ## Estructura
 
 ```
-docs/prd-contratacion.html      PRD del frente de contratación pública
+BACKLOG.md                      Backlog priorizado del hackathon
 workflows/bienvenida/           Flujo de suscripción por WhatsApp
 functions/                      Funciones Kapso
+docs/prd-contratacion.html      PRD de contratación pública (parqueado)
 ```
+
+## Parqueado
+
+Este proyecto nació mirando contratación pública del SECOP II. Ese frente tiene PRD completo en `docs/prd-contratacion.html` y cuatro señales de riesgo ya validadas contra datos reales — quedó fuera del alcance por decisión de producto, no por falta de viabilidad.
 
 ## Desarrollo
 
