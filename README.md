@@ -53,8 +53,13 @@ Colombia tiene una de las tarifas más bajas del mundo para plantillas *utility*
 
 ```
 BACKLOG.md                      Backlog priorizado del hackathon
-workflows/bienvenida/           Flujo de suscripción por WhatsApp
-functions/                      Funciones Kapso
+src/sismos.js                   Detección USGS + intensidad por ubicación
+src/alertar.js                  Ciclo de alertas (agrupa réplicas)
+src/responder.js                Preguntas de seguimiento
+src/comparar.js                 Un sismo visto desde varias ciudades
+workflows/onboarding/           Flujo de suscripción por WhatsApp
+docs/ONBOARDING.md              Cómo se capta y por qué así
+docs/DEMO.md                    Guion de demo, 3 minutos
 docs/prd-contratacion.html      PRD de contratación pública (parqueado)
 ```
 
@@ -103,4 +108,6 @@ El mismo evento le habría dicho *fuerte* a Pereira y *leve* a Bogotá. Las rép
 
 ## Estado
 
-Prototipo. Las fuentes están verificadas y el envío por WhatsApp está probado de punta a punta; el motor de señales y el sincronizador todavía no están construidos.
+Prototipo funcional. El ciclo completo está verificado de punta a punta contra datos y teléfonos reales: detección, cálculo de intensidad, envío, agrupación de réplicas y respuesta a preguntas.
+
+Falta activar el workflow de onboarding en Kapso y que Meta apruebe la plantilla UTILITY para poder alertar fuera de la ventana de 24 h. Lo siguiente con más valor es el aviso de tsunami en el Pacífico, que es el único caso con ventaja de tiempo real.
