@@ -76,7 +76,13 @@ async function pedir(ruta, opciones = {}) {
   if (!res.ok) {
     throw new Error(`Supabase ${res.status} en ${ruta}: ${await res.text()}`);
   }
-  return res.status === 204 ? null : res.json();
+
+  // Un insert correcto responde 201 con el cuerpo vacío, y un PATCH 204
+  // también: `res.json()` sobre eso revienta con "Unexpected end of JSON
+  // input", un error que no dice nada de lo que pasó. Se lee como texto y
+  // solo se parsea si hay algo que parsear.
+  const cuerpo = await res.text();
+  return cuerpo ? JSON.parse(cuerpo) : null;
 }
 
 const rpc = (nombre, args) =>
