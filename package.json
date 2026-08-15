@@ -4,5 +4,8 @@
   "type": "module",
   "dependencies": {
     "@kapso/workflows": "^0.3.1"
+  },
+  "scripts": {
+    "test": "node src/sismos.test.js"
   }
 }
