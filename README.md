@@ -55,6 +55,8 @@ Colombia tiene una de las tarifas más bajas del mundo para plantillas *utility*
 ```
 BACKLOG.md                      Backlog priorizado del hackathon
 db/schema.sql                   Esquema de Supabase (idempotente)
+docs/PLATAFORMAS.md             Catálogo de las 14 webs ciudadanas
+data/snapshots/                 Volcados fechados de lo raspado
 src/db.js                       Persistencia: Supabase o archivos JSON
 src/sismos.js                   Detección USGS + intensidad por ubicación
 src/alertar.js                  Ciclo de alertas (agrupa réplicas)
@@ -122,6 +124,8 @@ Toda respuesta lleva fuente y fecha de verificación. No es adorno: media pregun
 
 *Conectada* = el bot lee sus datos cada media hora y responde con direcciones concretas.
 *En el directorio* = el bot la recomienda según la zona y la necesidad, pero todavía no raspa sus datos.
+
+El catálogo completo de las catorce, con matriz de solapamientos, huecos sin cubrir y los seis pasos para unirlas, está en [`docs/PLATAFORMAS.md`](docs/PLATAFORMAS.md).
 
 `recursos` es una sola tabla polimórfica con un `tipo`, y la vista `recursos_unicos` se queda con la fila verificada más reciente por nombre. Ahí está el punto: cuando cinco webs listen el mismo acopio, la gente verá uno.
 
