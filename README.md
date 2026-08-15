@@ -65,12 +65,33 @@ Este proyecto nació mirando contratación pública del SECOP II. Ese frente tie
 ## Desarrollo
 
 ```bash
-npm install
-kapso build          # compila workflows/**/workflow.ts a JSON
-kapso push           # publica en Kapso (queda en draft, hay que activarlo)
+pnpm install
+pnpm test                          # autochequeo de geometría y umbrales
+
+node src/alertar.js --seco         # ciclo completo sin enviar nada
+node src/alertar.js                # revisa y envía de verdad
+node src/alertar.js --desde 8000   # reproduce un evento real (para la demo)
+
+kapso build                        # compila workflows/**/workflow.ts a JSON
+kapso push                         # publica en Kapso (queda en draft)
 ```
 
-El workflow `bienvenida` se dispara con cualquier mensaje entrante al número configurado, ofrece elegir tema, pide municipio y confirma la suscripción.
+El workflow `bienvenida` se dispara con cualquier mensaje entrante al número configurado, pide municipio y confirma la suscripción. `src/alertar.js` es el ciclo: consulta el USGS, calcula la intensidad en el municipio de cada suscriptor y le escribe solo a quien lo sintió.
+
+### Verificado de punta a punta
+
+Reproduciendo el M7.4 del 10 de agosto sobre un suscriptor en Quibdó:
+
+```
+→ 573223224730 (Quibdó) MMI 4.8 · delivered
+```
+
+> ⚠️ Sismo M7.4 detectado
+> 📍 5 km S of San José del Palmar, Colombia
+> 🕐 7:34:28 a. m. · 110 km de profundidad
+> **En Quibdó se sintió moderado** (a 152 km del epicentro).
+
+El mismo evento le habría dicho *fuerte* a Pereira y *leve* a Bogotá. Las réplicas M5.0 y M4.2, profundas, no habrían despertado a nadie.
 
 ## Estado
 
