@@ -3,9 +3,7 @@
 // Corre cada minuto: pregunta al USGS, evalúa la intensidad para cada
 // suscriptor en su municipio, y le escribe solo a quien de verdad lo sintió.
 
-import { execFile } from "node:child_process";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { promisify } from "node:util";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -15,16 +13,16 @@ import {
   clasificarReplicas,
   mensajeReplicas,
 } from "./sismos.js";
+import {
+  intensidadEn,
+  describirIntensidad,
+} from "./sismos.js";
 import { avisosParaColombia, mensajeTsunami } from "./tsunami.js";
+import { enviarTexto, enviarAlertaSismica, ventanasAbiertas } from "./whatsapp.js";
 
-const ejecutar = promisify(execFile);
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SUSCRIPTORES = join(RAIZ, "data", "suscriptores.json");
 const ENVIADOS = join(RAIZ, "data", "enviados.json");
-
-// Número "Melo". Producción, CONNECTED, verificado.
-const PHONE_NUMBER_ID = "1243233552205505";
-const KAPSO = join(process.env.HOME, "Library", "pnpm", "kapso");
 
 async function leerJson(ruta, porDefecto) {
   try {
@@ -39,21 +37,15 @@ async function escribirJson(ruta, valor) {
   await writeFile(ruta, JSON.stringify(valor, null, 2));
 }
 
-/**
- * ponytail: el envío va por el CLI de Kapso en vez de su API HTTP. Reusa la
- * sesión ya autenticada y no mete un token más en el repo. El techo es obvio
- * —un proceso por mensaje, no aguanta miles de suscriptores— y el día que
- * estorbe se cambia por un POST a la API con una API key.
- */
-async function enviarWhatsapp(telefono, texto) {
-  const { stdout } = await ejecutar(KAPSO, [
-    "whatsapp", "messages", "send",
-    "--phone-number-id", PHONE_NUMBER_ID,
-    "--to", telefono,
-    "--text", texto,
-    "--output", "json",
-  ]);
-  return JSON.parse(stdout).messages?.[0]?.id;
+/** Las cinco variables de la plantilla UTILITY `alerta_sismica`. */
+function plantillaDe(sismo, lugar) {
+  return {
+    magnitud: sismo.magnitud,
+    epicentro: sismo.lugar,
+    hora: sismo.hora.toLocaleTimeString("es-CO", { timeZone: "America/Bogota" }),
+    profundidad: Math.round(sismo.profundidadKm),
+    intensidad: describirIntensidad(intensidadEn(sismo, lugar)).etiqueta,
+  };
 }
 
 export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) {
@@ -70,6 +62,10 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
     await sismosRecientes({ desdeMinutos, magnitudMinima: 2.5 })
   );
   const resultados = [];
+
+  // Quién tiene la ventana de 24 h abierta. Fuera de ella solo pasa la
+  // plantilla UTILITY aprobada.
+  const abiertas = await ventanasAbiertas();
 
   // El tsunami se consulta una vez, no una por suscriptor: es el mismo
   // boletín para toda la costa.
@@ -98,7 +94,18 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
           console.log(`[seco] → ${sus.telefono} (${lugar.nombre}) TSUNAMI ${aviso.categoria}`);
           console.log(texto.replace(/^/gm, "    "), "\n");
         } else {
-          const wamid = await enviarWhatsapp(sus.telefono, texto);
+          // No hay plantilla UTILITY de tsunami aprobada todavía, así que
+          // fuera de la ventana se degrada a la de sismo, que sí pasa. Es
+          // peor mandar un aviso imperfecto que no mandarlo.
+          const wamid = abiertas.has(sus.telefono)
+            ? await enviarTexto(sus.telefono, texto)
+            : await enviarAlertaSismica(sus.telefono, {
+                magnitud: aviso.magnitud ?? "—",
+                epicentro: `TSUNAMI · ${aviso.region}`,
+                hora: "ver boletín",
+                profundidad: "—",
+                intensidad: "AMENAZA DE TSUNAMI, subí a terreno alto",
+              });
           console.log(`→ ${sus.telefono} (${lugar.nombre}) TSUNAMI ${aviso.categoria} · ${wamid}`);
           enviados.add(clave);
         }
@@ -119,6 +126,7 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
 
     const envios = principales.map((s) => ({
       texto: evaluarAlerta(s, lugar).mensaje,
+      sismo: s,
       ids: [s.id],
       etiqueta: `M${s.magnitud}`,
     }));
@@ -136,8 +144,11 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
         console.log(`[seco] → ${sus.telefono} (${lugar.nombre}) ${envio.etiqueta}`);
         console.log(envio.texto.replace(/^/gm, "    "), "\n");
       } else {
-        const wamid = await enviarWhatsapp(sus.telefono, envio.texto);
-        console.log(`→ ${sus.telefono} (${lugar.nombre}) ${envio.etiqueta} · ${wamid}`);
+        const wamid = abiertas.has(sus.telefono)
+          ? await enviarTexto(sus.telefono, envio.texto)
+          : await enviarAlertaSismica(sus.telefono, plantillaDe(envio.sismo ?? pendientes[0], lugar));
+        const via = abiertas.has(sus.telefono) ? "texto" : "plantilla";
+        console.log(`→ ${sus.telefono} (${lugar.nombre}) ${envio.etiqueta} · ${via} · ${wamid}`);
         envio.ids.forEach((id) => enviados.add(`${id}:${sus.telefono}`));
       }
       resultados.push({ telefono: sus.telefono, ids: envio.ids, etiqueta: envio.etiqueta });

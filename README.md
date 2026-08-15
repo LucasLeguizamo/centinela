@@ -43,7 +43,7 @@ Probado seis veces contra tres números y cuatro plantillas aprobadas: **toda pl
 Consecuencias de diseño, no negociables:
 
 1. **El onboarding empieza con el usuario escribiendo primero.** Link `wa.me` o QR con mensaje precargado. Captar suscriptores empujándoles el primer mensaje no funciona: no llega ninguno.
-2. **Toda alerta fuera de la ventana de 24 h va por plantilla UTILITY.** Las UTILITY están exentas del tope 131049. Ojo: Meta reclasifica — dos plantillas de este mismo proyecto pasaron de UTILITY a MARKETING solas.
+2. **Toda alerta fuera de la ventana de 24 h va por plantilla UTILITY.** Las UTILITY están exentas del tope 131049. `alerta_sismica` está aprobada y verificada en entrega. Ojo: Meta reclasifica — dos plantillas de este mismo proyecto pasaron de UTILITY a MARKETING solas.
 3. **Dentro de la ventana de 24 h, texto libre y gratis.** Ahí vive la conversación: preguntas, explicaciones, derechos de petición.
 
 ### Costo
@@ -58,6 +58,8 @@ src/sismos.js                   Detección USGS + intensidad por ubicación
 src/alertar.js                  Ciclo de alertas (agrupa réplicas)
 src/responder.js                Preguntas de seguimiento
 src/tsunami.js                  Boletines del PTWC para la costa Pacífica
+src/suscribir.js                Sincroniza las suscripciones del onboarding
+src/whatsapp.js                 Envío, plantillas y ventana de 24 h
 src/comparar.js                 Un sismo visto desde varias ciudades
 workflows/onboarding/           Flujo de suscripción por WhatsApp
 docs/ONBOARDING.md              Cómo se capta y por qué así
@@ -78,6 +80,9 @@ pnpm test                          # autochequeo de geometría y umbrales
 node src/alertar.js --seco         # ciclo de alertas sin enviar nada
 node src/alertar.js                # revisa y envía de verdad
 node src/alertar.js --desde 8000   # reproduce un evento real (para la demo)
+
+node src/suscribir.js --seco       # sincroniza suscripciones del onboarding
+node src/suscribir.js              # las guarda de verdad
 
 node src/responder.js --seco       # clasifica preguntas entrantes, sin enviar
 node src/responder.js              # responde de verdad

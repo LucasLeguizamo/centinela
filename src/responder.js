@@ -7,9 +7,7 @@
 //   node src/responder.js --seco    → clasifica y muestra, sin enviar
 //   node src/responder.js           → responde de verdad
 
-import { execFile } from "node:child_process";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { promisify } from "node:util";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -21,14 +19,12 @@ import {
   normalizarMunicipio,
   MUNICIPIOS,
 } from "./sismos.js";
+import { enviarTexto, entrantes } from "./whatsapp.js";
 
-const ejecutar = promisify(execFile);
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SUSCRIPTORES = join(RAIZ, "data", "suscriptores.json");
 const RESPONDIDOS = join(RAIZ, "data", "respondidos.json");
 
-const PHONE_NUMBER_ID = "1243233552205505";
-const KAPSO = join(process.env.HOME, "Library", "pnpm", "kapso");
 
 async function leerJson(ruta, porDefecto) {
   try {
@@ -152,34 +148,10 @@ export async function componerRespuesta(intencion, lugar) {
   );
 }
 
-async function enviarWhatsapp(telefono, texto) {
-  const { stdout } = await ejecutar(KAPSO, [
-    "whatsapp", "messages", "send",
-    "--phone-number-id", PHONE_NUMBER_ID,
-    "--to", telefono,
-    "--text", texto,
-    "--output", "json",
-  ]);
-  return JSON.parse(stdout).messages?.[0]?.id;
-}
-
-async function entrantesRecientes(horas = 24) {
-  const desde = new Date(Date.now() - horas * 3_600_000).toISOString();
-  const { stdout } = await ejecutar(KAPSO, [
-    "whatsapp", "messages", "list",
-    "--phone-number-id", PHONE_NUMBER_ID,
-    "--direction", "inbound",
-    "--since", desde,
-    "--limit", "50",
-    "--output", "json",
-  ]);
-  return JSON.parse(stdout).data ?? [];
-}
-
 export async function atenderPreguntas({ seco = false } = {}) {
   const suscriptores = await leerJson(SUSCRIPTORES, []);
   const respondidos = new Set(await leerJson(RESPONDIDOS, []));
-  const mensajes = await entrantesRecientes();
+  const mensajes = await entrantes(24);
 
   let atendidos = 0;
 
@@ -204,7 +176,7 @@ export async function atenderPreguntas({ seco = false } = {}) {
       console.log(`[seco] ${m.from} · "${texto}" → ${intencion}`);
       console.log(respuesta.replace(/^/gm, "    "), "\n");
     } else {
-      const wamid = await enviarWhatsapp(m.from, respuesta);
+      const wamid = await enviarTexto(m.from, respuesta);
       console.log(`→ ${m.from} · "${texto}" → ${intencion} · ${wamid}`);
       respondidos.add(m.id);
     }
