@@ -13,8 +13,14 @@ Son fechados a propósito: no se actualizan, se agregan. Un archivo que cambia c
 ## `acopios-2026-08-15.json`
 
 145 centros de acopio de [Centros de Acopio Colombia](https://emergency-rosy.vercel.app), en 51 municipios.
-107 verificados por el canal oficial de la entidad responsable. Los 145 traen coordenadas; 82 traen teléfono.
+107 verificados por el canal oficial de la entidad responsable. Los 145 traen coordenadas.
 
-Cada fila lleva `fuente_url`, que apunta a la **fuente primaria** del dato y no al agregador: si un acopio salió de una historia de Instagram de la alcaldía, ese es el enlace.
+Cada fila lleva `fuente_url`, que apunta a la **fuente primaria** del dato cuando la hay: si un acopio salió de una historia de Instagram de la alcaldía, ese es el enlace. En siete de los 145 no se pudo rastrear más allá del agregador, y ahí apunta a él.
 
-Los teléfonos son de contacto de los puntos de recolección, publicados por las alcaldías, fundaciones y cámaras de comercio que los operan.
+## Sin teléfonos, a propósito
+
+**El volcado no incluye la columna `telefono`.** Los teléfonos siguen en `recursos` en Supabase, detrás de RLS, que es de donde el bot los lee — no se pierde funcionalidad.
+
+De los 82 números, 61 eran celulares en formato personal, y varios son el de quien coordina el punto: una parroquia, una fundación pequeña, un café que prestó el local. Que la alcaldía los publique hoy no es lo mismo que dejarlos en un repositorio público para siempre — **git no olvida.** Cuando esto pase y alguien pida que le borren el número, la web original lo quita en un minuto; el historial de un repo, no.
+
+Un volcado que existe como evidencia de qué publicaba una web no necesita el dato de contacto para cumplir esa función.
