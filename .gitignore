@@ -8,4 +8,7 @@ node_modules/
 data/enviados.json
 data/respondidos.json
 data/recursos.json
+data/fuentes.json
+
+# artefacto de `kapso build`: la fuente es el .ts
 workflows/*/workflow.js
