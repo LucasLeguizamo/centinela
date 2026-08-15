@@ -1,0 +1,133 @@
+{
+  "edges": [
+    {
+      "label": "next",
+      "source": "start",
+      "target": "saludo"
+    },
+    {
+      "label": "next",
+      "source": "saludo",
+      "target": "elegir_tema"
+    },
+    {
+      "label": "next",
+      "source": "elegir_tema",
+      "target": "pedir_ciudad"
+    },
+    {
+      "label": "next",
+      "source": "pedir_ciudad",
+      "target": "recibir_ciudad"
+    },
+    {
+      "label": "next",
+      "source": "recibir_ciudad",
+      "target": "confirmar"
+    }
+  ],
+  "nodes": [
+    {
+      "data": {
+        "config": {},
+        "node_type": "start"
+      },
+      "id": "start",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "body_text": "Hola 👋 Soy Centinela. Vigilo lo público y te aviso cuando algo te afecta, sin que tengas que buscar nada.\n\n¿Sobre qué querés recibir alertas?",
+          "buttons": [
+            {
+              "id": "sismos",
+              "title": "Sismos"
+            },
+            {
+              "id": "contratos",
+              "title": "Contratos públicos"
+            },
+            {
+              "id": "ambas",
+              "title": "Las dos"
+            }
+          ],
+          "footer_text": "Escribí BAJA cuando quieras dejar de recibirlas",
+          "header_text": "Centinela",
+          "header_type": "text",
+          "interactive_type": "button"
+        },
+        "node_type": "send_interactive"
+      },
+      "id": "saludo",
+      "position": {
+        "x": 240,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "has_timeout": false,
+          "save_response_to": "tema"
+        },
+        "node_type": "wait_for_response"
+      },
+      "id": "elegir_tema",
+      "position": {
+        "x": 480,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "message": "Listo. ¿En qué municipio estás?\n\nLo uso para dos cosas: calcular qué tan fuerte se sentiría un sismo donde estás, y vigilar los contratos de tu alcaldía. Respondé solo el nombre, por ejemplo: Quibdó."
+        },
+        "node_type": "send_text"
+      },
+      "id": "pedir_ciudad",
+      "position": {
+        "x": 720,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "has_timeout": false,
+          "save_response_to": "ciudad"
+        },
+        "node_type": "wait_for_response"
+      },
+      "id": "recibir_ciudad",
+      "position": {
+        "x": 960,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "message": "Quedaste suscrito para {{vars.ciudad}} ✅\n\nNo te voy a escribir todos los días. Solo cuando pase algo que valga la pena: un sismo que se sienta ahí, una réplica, o un contrato de tu alcaldía con señales de riesgo.\n\nPodés responderme en cualquier momento si querés entender algo."
+        },
+        "node_type": "send_text"
+      },
+      "id": "confirmar",
+      "position": {
+        "x": 1200,
+        "y": 0
+      },
+      "type": "flow-node"
+    }
+  ]
+}

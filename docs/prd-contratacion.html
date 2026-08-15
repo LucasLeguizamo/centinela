@@ -1,0 +1,901 @@
+<title>Centinela SECOP</title>
+<style>
+  :root {
+    --paper:   #F1F2EF;
+    --surface: #FFFFFF;
+    --ink:     #14171A;
+    --mid:     #59616B;
+    --faint:   #858C94;
+    --rule:    #D3D6D0;
+    --rule-hard:#A8ACA6;
+    --accent:  #A93318;
+    --accent-soft: #F0E2DE;
+    --ok:      #2F6146;
+    --warn:    #8A6216;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:   #101315;
+      --surface: #171B1E;
+      --ink:     #E8E6E1;
+      --mid:     #A0A7AF;
+      --faint:   #7B838B;
+      --rule:    #2B3136;
+      --rule-hard:#414850;
+      --accent:  #E0604A;
+      --accent-soft: #2A1C19;
+      --ok:      #6FB18F;
+      --warn:    #C99B3F;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:   #101315;
+    --surface: #171B1E;
+    --ink:     #E8E6E1;
+    --mid:     #A0A7AF;
+    --faint:   #7B838B;
+    --rule:    #2B3136;
+    --rule-hard:#414850;
+    --accent:  #E0604A;
+    --accent-soft: #2A1C19;
+    --ok:      #6FB18F;
+    --warn:    #C99B3F;
+  }
+
+  :root {
+    --mono: ui-monospace, "SF Mono", "Menlo", "Consolas", "Liberation Mono", monospace;
+    --serif: "Charter", "Bitstream Charter", "Sitka Text", Georgia, "Times New Roman", serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 20px 120px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    padding: 72px 0 28px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .stamp {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-bottom: 26px;
+  }
+  .stamp span { color: var(--faint); }
+  .masthead h1 {
+    font-family: var(--mono);
+    font-size: clamp(38px, 7vw, 66px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+  .deck {
+    font-size: 20px;
+    line-height: 1.5;
+    color: var(--mid);
+    max-width: 62ch;
+    margin: 0;
+  }
+
+  .masthead-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    margin-top: 34px;
+    border-top: 1px solid var(--rule);
+  }
+  .masthead-meta div {
+    flex: 1 1 160px;
+    padding: 14px 18px 14px 0;
+    border-right: 1px solid var(--rule);
+  }
+  .masthead-meta div:last-child { border-right: none; }
+  .masthead-meta dt {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin: 0 0 6px;
+  }
+  .masthead-meta dd {
+    font-family: var(--mono);
+    font-size: 14px;
+    margin: 0;
+    color: var(--ink);
+  }
+
+  /* ---------- sections ---------- */
+
+  section {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 0 32px;
+    padding: 46px 0 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+  section:last-of-type { border-bottom: none; }
+
+  .rail {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    padding-top: 6px;
+  }
+  .rail small {
+    display: block;
+    color: var(--faint);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 10px;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  .body > *:first-child { margin-top: 0; }
+
+  h2 {
+    font-family: var(--mono);
+    font-size: 25px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin: 0 0 20px;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin: 36px 0 12px;
+  }
+  p { margin: 0 0 16px; max-width: 68ch; }
+  ul, ol { margin: 0 0 16px; padding-left: 22px; max-width: 68ch; }
+  li { margin-bottom: 8px; }
+  strong { font-weight: 700; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+  code {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--accent-soft);
+    padding: 1px 5px;
+    color: var(--ink);
+  }
+
+  .lede {
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--ink);
+    border-left: 3px solid var(--accent);
+    padding-left: 18px;
+    margin-bottom: 24px;
+  }
+
+  /* ---------- data blocks ---------- */
+
+  .scroll { overflow-x: auto; margin: 0 0 20px; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 540px;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  caption {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--faint);
+    text-align: left;
+    padding-bottom: 8px;
+  }
+  th {
+    text-align: left;
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mid);
+    border-bottom: 1px solid var(--rule-hard);
+    padding: 0 14px 7px 0;
+    vertical-align: bottom;
+  }
+  td {
+    padding: 9px 14px 9px 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    color: var(--ink);
+  }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; padding-right: 0; }
+  tbody tr:last-child td { border-bottom: none; }
+  .id { color: var(--accent); white-space: nowrap; }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .tag.live { color: var(--ok); }
+  .tag.todo { color: var(--warn); }
+  .tag.cut  { color: var(--faint); }
+
+  .callout {
+    border: 1px solid var(--rule-hard);
+    background: var(--surface);
+    padding: 20px 22px;
+    margin: 0 0 22px;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    border-top: 1px solid var(--rule-hard);
+    border-left: 1px solid var(--rule-hard);
+    margin: 0 0 26px;
+  }
+  .stats > div {
+    border-right: 1px solid var(--rule-hard);
+    border-bottom: 1px solid var(--rule-hard);
+    padding: 16px 18px;
+    background: var(--surface);
+  }
+  .stat-n {
+    font-family: var(--mono);
+    font-size: 27px;
+    font-weight: 600;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    display: block;
+  }
+  .stat-l {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--mid);
+    display: block;
+    margin-top: 7px;
+    line-height: 1.5;
+  }
+
+  /* ---------- conversation ---------- */
+
+  .convo {
+    border: 1px solid var(--rule-hard);
+    background: var(--surface);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 560px;
+    margin: 0 0 22px;
+  }
+  .msg {
+    font-size: 15px;
+    line-height: 1.5;
+    padding: 11px 14px;
+    max-width: 88%;
+    border: 1px solid var(--rule-hard);
+  }
+  .msg.bot { align-self: flex-start; background: var(--paper); }
+  .msg.user {
+    align-self: flex-end;
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+  .msg b { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin-bottom: 5px; font-weight: 600; }
+  .msg .flag { color: var(--accent); font-weight: 700; }
+
+  /* ---------- misc ---------- */
+
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0 34px;
+  }
+  .cols ul { max-width: none; }
+
+  .arch {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.85;
+    white-space: pre;
+    overflow-x: auto;
+    border: 1px solid var(--rule-hard);
+    background: var(--surface);
+    padding: 20px 22px;
+    margin: 0 0 22px;
+    color: var(--ink);
+  }
+
+  footer {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--faint);
+    border-top: 2px solid var(--ink);
+    padding-top: 18px;
+    margin-top: 54px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 720px) {
+    body { font-size: 16px; }
+    section { grid-template-columns: 1fr; gap: 0; padding-top: 38px; }
+    .rail { padding-bottom: 14px; }
+    .rail small { display: inline; margin-left: 10px; }
+    .masthead { padding-top: 48px; }
+  }
+</style>
+
+<div class="sheet">
+
+<header class="masthead">
+  <div class="stamp">
+    PRD v1 <span>·</span> Track 01 — Transparencia <span>·</span> 15 ago 2026
+  </div>
+  <h1>Centinela SECOP</h1>
+  <p class="deck">
+    Los contratos públicos de Colombia ya son datos abiertos. El problema nunca fue el acceso:
+    fue que nadie va a buscarlos. Centinela invierte la carga — vigila el SECOP todos los días
+    y le escribe por WhatsApp al ciudadano cuando algo en su municipio huele mal.
+  </p>
+  <dl class="masthead-meta">
+    <div><dt>Fuente</dt><dd>SECOP II · datos.gov.co</dd></div>
+    <div><dt>Canal</dt><dd>WhatsApp Cloud API</dd></div>
+    <div><dt>Stack</dt><dd>Next.js · Vercel · Postgres</dd></div>
+    <div><dt>Estado</dt><dd>API verificada hoy</dd></div>
+  </dl>
+</header>
+
+<section>
+  <div class="rail">§1<small>Problema</small></div>
+  <div class="body">
+    <h2>La transparencia existe, pero es ilegible</h2>
+    <p class="lede">
+      Colombia publica cada contrato estatal en tiempo casi real. En 2026 van más de
+      743.000 contratos firmados. Nadie los lee.
+    </p>
+    <p>
+      El SECOP II es uno de los sistemas de contratación abierta más completos de la región. Está todo:
+      quién contrató, a quién, por cuánto, con qué justificación, quién ordenó el gasto y quién supervisa.
+      Y aun así, la corrupción local sigue ocurriendo a plena luz, porque entre el dato publicado y el
+      ciudadano afectado hay tres barreras:
+    </p>
+    <ul>
+      <li><strong>Nadie sabe que existe.</strong> Consultar el SECOP exige saber que el SECOP existe, cómo se llama la entidad y qué es una "modalidad de contratación".</li>
+      <li><strong>Nadie va a buscar.</strong> La vigilancia ciudadana requiere una acción proactiva y recurrente que nadie sostiene. El dato es <em>pull</em>; la atención humana es <em>push</em>.</li>
+      <li><strong>Nadie sabe qué es raro.</strong> Ver un contrato directo por $40 millones no dice nada sin saber que es el cuarto del mismo proveedor con la misma alcaldía este mes.</li>
+    </ul>
+    <p>
+      Las herramientas que existen hoy — el Portal Anticorrupción, los índices de riesgo tipo IMCO, o
+      HELIOS del Ministerio de Defensa — resuelven la tercera barrera con analítica seria, pero siguen
+      siendo dashboards. Un dashboard solo sirve a quien ya decidió investigar.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§2<small>Producto</small></div>
+  <div class="body">
+    <h2>Qué es</h2>
+    <p class="lede">
+      Un centinela que le manda un WhatsApp al ciudadano cuando su alcaldía firma un contrato
+      con señales de riesgo — escrito en español simple, con el link a la evidencia oficial.
+    </p>
+    <h3>Por qué WhatsApp y no una app</h3>
+    <p>
+      WhatsApp tiene penetración cercana al universal en Colombia y es el canal donde la gente ya recibe
+      lo que le importa. No hay que instalar nada, no hay que crear cuenta, no hay contraseña que olvidar.
+      Suscribirse cuesta un mensaje. Ese es el punto entero del producto: <strong>la fricción de vigilar
+      tiene que ser menor que la fricción de ignorar.</strong>
+    </p>
+    <p>
+      Un veedor en Caucasia no va a abrir un dashboard todos los martes. Sí va a leer un mensaje que le
+      llega solo.
+    </p>
+    <h3>El diferencial en una línea</h3>
+    <p>
+      PACO y HELIOS convierten datos en análisis. Centinela convierte análisis en <em>una notificación
+      que llega sin que la pidas</em>. Es la última milla que nadie ha construido.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§3<small>Usuario</small></div>
+  <div class="body">
+    <h2>Para quién</h2>
+    <div class="scroll">
+      <table>
+        <caption>Segmentos, en orden de prioridad para el MVP</caption>
+        <thead>
+          <tr><th>Perfil</th><th>Qué necesita</th><th>MVP</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Periodista o veedor local</td>
+            <td>Saber hoy lo que su municipio firmó ayer, con la evidencia lista para citar</td>
+            <td><span class="tag live">Primario</span></td>
+          </tr>
+          <tr>
+            <td>Concejal o líder comunal</td>
+            <td>Munición verificable para control político sin equipo de analistas</td>
+            <td><span class="tag live">Primario</span></td>
+          </tr>
+          <tr>
+            <td>Ciudadano interesado</td>
+            <td>Enterarse, entender por qué importa, poder hacer algo al respecto</td>
+            <td><span class="tag todo">Secundario</span></td>
+          </tr>
+          <tr>
+            <td>Proveedor / competidor</td>
+            <td>Detectar procesos amañados donde no pudo competir</td>
+            <td><span class="tag cut">Fuera</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>El trabajo por hacer</h3>
+    <p>
+      <em>"Quiero enterarme cuando algo raro pase con la plata de mi municipio, sin tener que
+      convertirme en analista de datos ni revisar nada."</em>
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§4<small>Hallazgos</small></div>
+  <div class="body">
+    <h2>Lo que ya verificamos contra la API</h2>
+    <p>
+      Todo lo de abajo se consultó en vivo contra <code>datos.gov.co</code> el 15 de agosto de 2026.
+      No son estimaciones.
+    </p>
+
+    <div class="stats">
+      <div><span class="stat-n">743k</span><span class="stat-l">Contratos firmados en 2026</span></div>
+      <div><span class="stat-n">80%</span><span class="stat-l">Son contratación directa</span></div>
+      <div><span class="stat-n">~4.5k</span><span class="stat-l">Contratos nuevos por día</span></div>
+      <div><span class="stat-n">&lt;1s</span><span class="stat-l">Latencia de la API</span></div>
+    </div>
+
+    <div class="callout">
+      <span class="callout-label">Hallazgo que define el producto</span>
+      <p>
+        De los 743.000 contratos de 2026, <strong>596.080 son contratación directa</strong> — la
+        modalidad sin competencia — por <strong>$610 billones de pesos</strong>. La licitación
+        pública, el mecanismo competitivo por excelencia, representa 1.089 contratos: el 0,15%.
+      </p>
+      <p>
+        Por eso el motor de señales no puede alertar sobre "contratación directa" a secas: sería
+        alertar sobre casi todo. El valor está en detectar <em>patrones</em> dentro de la directa.
+      </p>
+    </div>
+
+    <h3>Datasets confirmados en funcionamiento</h3>
+    <div class="scroll">
+      <table>
+        <caption>Todos respondieron 200 y se actualizaron el 15/08/2026</caption>
+        <thead>
+          <tr><th>ID</th><th>Dataset</th><th>Uso</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="id">jbjy-vk9h</td><td>SECOP II — Contratos Electrónicos</td><td>Núcleo. 85 columnas: valores, fechas, proveedor, ordenador del gasto, supervisor</td></tr>
+          <tr><td class="id">cb9c-h8sn</td><td>SECOP II — Adiciones</td><td>Prórrogas y adiciones de valor sobre contratos existentes</td></tr>
+          <tr><td class="id">p6dx-8zbt</td><td>SECOP II — Procesos de Contratación</td><td>Precio base vs. adjudicado, número de oferentes</td></tr>
+          <tr><td class="id">4n4q-k399</td><td>Multas y Sanciones SECOP I</td><td>Antecedentes del proveedor</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Trampa técnica encontrada</h3>
+    <p>
+      El campo <code>ultima_actualizacion</code> viene vacío en buena parte de los registros: no sirve
+      como cursor de sincronización. El polling incremental tiene que ir por
+      <code>fecha_de_firma</code>, y con una ventana de re-escaneo de 30 días hacia atrás, porque el
+      SECOP recibe cargas retroactivas. Sin esa ventana se pierden contratos.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§5<small>Motor</small></div>
+  <div class="body">
+    <h2>Las señales</h2>
+    <p>
+      Ocho reglas, agrupadas en las tres dimensiones de la metodología IMCO replicada sobre el SECOP
+      colombiano: falta de competencia, anomalías del proceso y falta de transparencia. Las marcadas
+      como probadas ya devolvieron resultados reales contra la API hoy.
+    </p>
+    <div class="scroll">
+      <table>
+        <caption>Motor de señales — MVP</caption>
+        <thead>
+          <tr><th>ID</th><th>Señal</th><th>Regla</th><th class="num">Volumen 2026</th><th>Estado</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="id">R1</td>
+            <td>Concentración proveedor–entidad</td>
+            <td>Mismo proveedor, misma entidad, &gt;15 contratos directos en el año</td>
+            <td class="num">64 máx.</td>
+            <td><span class="tag live">Probada</span></td>
+          </tr>
+          <tr>
+            <td class="id">R2</td>
+            <td>Contrato retroactivo</td>
+            <td><code>fecha_de_firma</code> posterior a <code>fecha_de_inicio</code></td>
+            <td class="num">39</td>
+            <td><span class="tag live">Probada</span></td>
+          </tr>
+          <tr>
+            <td class="id">R3</td>
+            <td>Anticipo desproporcionado</td>
+            <td>Pago adelantado &gt; 40% del valor del contrato</td>
+            <td class="num">253</td>
+            <td><span class="tag live">Probada</span></td>
+          </tr>
+          <tr>
+            <td class="id">R4</td>
+            <td>Autocontratación aparente</td>
+            <td><code>nombre_entidad</code> ≈ <code>proveedor_adjudicado</code></td>
+            <td class="num">29</td>
+            <td><span class="tag live">Probada</span></td>
+          </tr>
+          <tr>
+            <td class="id">R5</td>
+            <td>Fraccionamiento</td>
+            <td>Varios contratos de objeto semánticamente equivalente, mismo proveedor, justo bajo el umbral de mínima cuantía</td>
+            <td class="num">—</td>
+            <td><span class="tag todo">Requiere IA</span></td>
+          </tr>
+          <tr>
+            <td class="id">R6</td>
+            <td>Adición desbordada</td>
+            <td>Adiciones acumuladas &gt; 50% del valor original (límite legal)</td>
+            <td class="num">—</td>
+            <td><span class="tag todo">Por validar</span></td>
+          </tr>
+          <tr>
+            <td class="id">R7</td>
+            <td>Valor atípico</td>
+            <td>Valor &gt; 3× la mediana de su categoría UNSPSC y tipo de contrato</td>
+            <td class="num">—</td>
+            <td><span class="tag todo">Por validar</span></td>
+          </tr>
+          <tr>
+            <td class="id">R8</td>
+            <td>Red de personas</td>
+            <td>Mismo ordenador del gasto y mismo proveedor repitiéndose entre entidades distintas</td>
+            <td class="num">—</td>
+            <td><span class="tag todo">Por validar</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <span class="callout-label">Ejemplo real encontrado hoy</span>
+      <p>
+        La <strong>Alcaldía de Caucasia</strong> aparece como entidad contratante y como proveedor
+        adjudicado en 29 contratos directos de 2026, por $396 millones. Puede ser un error de captura
+        o puede no serlo — y esa es exactamente la clase de anomalía que hoy nadie mira, porque nadie
+        está mirando.
+      </p>
+    </div>
+
+    <h3>Puntaje</h3>
+    <p>
+      Cada señal aporta puntos; el contrato se alerta si supera el umbral. El puntaje no dice
+      "corrupción": dice <em>cuánto merece una mirada humana</em>. Esa distinción es de producto y
+      también legal — ver §9.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§6<small>IA</small></div>
+  <div class="body">
+    <h2>Dónde la IA hace el trabajo que SQL no puede</h2>
+    <p>
+      El reto pide una solución de IA. Aquí la IA no es decoración: hay cuatro puntos donde las
+      reglas determinísticas se quedan cortas.
+    </p>
+    <ol>
+      <li>
+        <strong>Detectar fraccionamiento (R5).</strong> El objeto contractual es texto libre. "Suministro
+        de refrigerios escolares" y "Adquisición de alimentos para PAE" pueden ser el mismo contrato
+        partido en dos para esquivar la licitación. Solo un modelo de lenguaje agrupa eso; ningún
+        <code>GROUP BY</code> lo hace.
+      </li>
+      <li>
+        <strong>Traducir la alerta.</strong> Convertir 85 columnas de jerga administrativa en dos frases
+        que un ciudadano entienda, sin perder precisión ni exagerar.
+      </li>
+      <li>
+        <strong>Responder preguntas.</strong> El usuario contesta el WhatsApp con "¿y eso por qué es
+        malo?" o "¿cuánto se ha ganado ese señor este año?" y el sistema consulta y responde.
+      </li>
+      <li>
+        <strong>Redactar el derecho de petición.</strong> Del hallazgo a la acción: un documento legal
+        prellenado con los datos del contrato, listo para radicar ante la entidad.
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§7<small>Flujo</small></div>
+  <div class="body">
+    <h2>Cómo se siente</h2>
+    <p>La experiencia completa vive dentro de una conversación. No hay app que abrir.</p>
+
+    <div class="convo">
+      <div class="msg user"><b>Ciudadano</b>Hola</div>
+      <div class="msg bot"><b>Centinela</b>Hola. Vigilo los contratos públicos de Colombia y te aviso cuando algo raro pasa cerca tuyo.<br><br>¿Qué municipio o entidad querés vigilar?</div>
+      <div class="msg user"><b>Ciudadano</b>Caucasia</div>
+      <div class="msg bot"><b>Centinela</b>Listo. Vigilando <b style="display:inline;font-family:inherit;font-size:inherit;letter-spacing:0;text-transform:none;color:inherit">Alcaldía de Caucasia</b>. Te escribo solo cuando encuentre algo. Escribí <em>parar</em> cuando quieras.</div>
+      <div class="msg bot"><b>Centinela · 2 días después</b><span class="flag">⚑ Señal en Caucasia</span><br><br>La Alcaldía firmó ayer un contrato directo por $38.400.000 con <em>Servicios Integrados CTA</em>.<br><br>Es el contrato número 21 con ese mismo proveedor este año, todos sin competencia.<br><br>Ver el expediente oficial: secop.gov.co/…</div>
+      <div class="msg user"><b>Ciudadano</b>¿y eso por qué es malo?</div>
+      <div class="msg bot"><b>Centinela</b>No necesariamente lo es. Pero contratar 21 veces al mismo proveedor sin abrir competencia es una de las señales que la metodología del índice de riesgo de compra pública marca como revisable.<br><br>¿Querés que te arme un derecho de petición para preguntarle a la Alcaldía?</div>
+      <div class="msg user"><b>Ciudadano</b>sí</div>
+    </div>
+
+    <h3>Decisiones de tono</h3>
+    <ul>
+      <li>El sistema <strong>nunca acusa</strong>. Dice "señal", "revisable", "sin competencia". Nunca "corrupto", "irregular" ni "ilegal".</li>
+      <li>Cada alerta trae el link al expediente oficial. La evidencia es del Estado, no nuestra.</li>
+      <li>Máximo una alerta por suscripción por día. Si hay cinco señales, se agrupan.</li>
+      <li>Salir cuesta una palabra. Un producto de vigilancia que no se puede apagar es spam.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§8<small>Alcance</small></div>
+  <div class="body">
+    <h2>Qué construimos y qué no</h2>
+    <div class="cols">
+      <div>
+        <h3>Dentro del MVP</h3>
+        <ul>
+          <li>Sincronización diaria de <code>jbjy-vk9h</code> y <code>cb9c-h8sn</code> con ventana retroactiva</li>
+          <li>Reglas R1 a R4 (las cuatro ya probadas) + R5 con IA</li>
+          <li>Suscripción por WhatsApp a una entidad o municipio</li>
+          <li>Alerta redactada por LLM con link al expediente</li>
+          <li>Respuesta conversacional a preguntas de seguimiento</li>
+          <li>Generación de derecho de petición</li>
+          <li>Baja con una palabra</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Fuera del MVP</h3>
+        <ul>
+          <li>Dashboard web — el canal es WhatsApp, punto</li>
+          <li>Cobertura de SECOP I (histórico anterior a 2019)</li>
+          <li>Cuentas, login, roles</li>
+          <li>Grafo de sociedades y beneficiarios finales</li>
+          <li>Alertas en tiempo real — el lote diario basta</li>
+          <li>Modelo de ML entrenado; el MVP son reglas + LLM</li>
+          <li>Cualquier idioma que no sea español</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§9<small>Riesgos</small></div>
+  <div class="body">
+    <h2>Lo que puede salir mal</h2>
+
+    <div class="callout">
+      <span class="callout-label">Riesgo crítico — reputacional y legal</span>
+      <p>
+        Una bandera roja no es una acusación. Señalar públicamente a una persona natural identificada
+        por su cédula, con la palabra "corrupción" cerca, es exposición real por injuria y por
+        tratamiento de datos personales. <strong>Mitigación:</strong> el sistema describe hechos
+        publicados por el Estado y nunca los califica; toda alerta enlaza a la fuente oficial; el
+        producto se presenta como herramienta de <em>vigilancia</em>, no de denuncia. Esto no es
+        cosmético — define la redacción de cada plantilla.
+      </p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>Riesgo</th><th>Mitigación</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Falsos positivos por datos sucios del SECOP</td><td>Umbrales calibrados contra volumen real; toda alerta muestra la evidencia cruda para que el humano juzgue</td></tr>
+          <tr><td>Fatiga de alertas → la gente se da de baja</td><td>Tope de una alerta diaria por suscripción, agrupada; solo se alerta por encima del umbral de puntaje</td></tr>
+          <tr><td>Número de WhatsApp bloqueado por Meta</td><td>Plantillas categoría <em>utility</em>, opt-in explícito, baja en un paso, sin envíos masivos no solicitados</td></tr>
+          <tr><td>La API de datos.gov.co cae o cambia el esquema</td><td>Ya nos pasó en la primera sesión (fallo de red). Reintentos con backoff, caché local de la última corrida, alerta interna si la sincronización devuelve cero</td></tr>
+          <tr><td>El número de prueba de Meta solo admite 5 destinatarios</td><td>Suficiente para la demo. Registrar número real requiere verificación de negocio y no cabe en el hackathon</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§10<small>Técnica</small></div>
+  <div class="body">
+    <h2>Arquitectura</h2>
+
+    <div class="arch">datos.gov.co (Socrata / SoQL)
+      │
+      │  cron diario · cursor por fecha_de_firma · ventana 30d
+      ▼
+Sincronizador          →   Postgres (contratos, proveedores, entidades)
+      │
+      ▼
+Motor de señales R1–R4     (SQL determinístico)
+      │
+      ▼
+Agrupador semántico R5     (LLM sobre objeto contractual)
+      │
+      ▼
+Puntaje + umbral
+      │
+      ▼
+Redactor de alerta         (LLM → español ciudadano)
+      │
+      ▼
+WhatsApp Cloud API         →   Ciudadano
+      ▲                              │
+      └────── webhook /api/whatsapp ──┘
+              (suscripción, preguntas, derecho de petición)</div>
+
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Capa</th><th>Elección</th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td>App y webhook</td><td>Next.js en Vercel</td><td>Ya es el setup del equipo; el webhook es un route handler</td></tr>
+          <tr><td>Programación</td><td>Vercel Cron</td><td>Una línea en <code>vercel.json</code>. Sin infraestructura extra</td></tr>
+          <tr><td>Datos</td><td>Postgres (Neon)</td><td>Las señales son consultas agregadas; es un trabajo para SQL</td></tr>
+          <tr><td>Mensajería</td><td>Meta Cloud API directo</td><td>Sin intermediario ni margen. Número de prueba gratis para la demo</td></tr>
+          <tr><td>IA</td><td>Claude</td><td>Agrupación semántica, redacción y Q&amp;A conversacional</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Costo de operación</h3>
+    <p>
+      Colombia tiene una de las tarifas más bajas del mundo para mensajes de categoría
+      <em>utility</em> en WhatsApp: <strong>≈ US$0,0008 por mensaje entregado</strong>. Las respuestas
+      dentro de la ventana de 24 horas son gratis.
+    </p>
+    <div class="stats">
+      <div><span class="stat-n">$0,80</span><span class="stat-l">USD por 1.000 alertas</span></div>
+      <div><span class="stat-n">$8</span><span class="stat-l">USD por 10.000 alertas</span></div>
+      <div><span class="stat-n">$0</span><span class="stat-l">Respuestas en ventana 24h</span></div>
+    </div>
+    <p>
+      El canal no es el costo. El costo es la inferencia del LLM, y solo se paga sobre los contratos
+      que ya pasaron el filtro determinístico — no sobre los 4.500 diarios.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§11<small>Métricas</small></div>
+  <div class="body">
+    <h2>Cómo sabemos si sirve</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Métrica</th><th>Qué prueba</th><th class="num">Meta demo</th></tr></thead>
+        <tbody>
+          <tr><td>Precisión de señales</td><td>De 20 alertas revisadas a mano, cuántas ameritan una mirada</td><td class="num">≥ 70%</td></tr>
+          <tr><td>Tasa de respuesta</td><td>Alertas que provocan una réplica del usuario — leyó y le importó</td><td class="num">≥ 30%</td></tr>
+          <tr><td>Acciones generadas</td><td>Derechos de petición solicitados</td><td class="num">≥ 1</td></tr>
+          <tr><td>Retención a 7 días</td><td>Suscritos que no se dieron de baja</td><td class="num">≥ 80%</td></tr>
+          <tr><td>Latencia firma → alerta</td><td>Qué tan fresco llega el dato</td><td class="num">&lt; 48h</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      La métrica que importa de verdad no cabe en un tablero: <strong>que una entidad responda un
+      derecho de petición originado en una alerta.</strong> Eso es el ciclo completo — dato abierto,
+      ciudadano avisado, Estado interpelado.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§12<small>Plan</small></div>
+  <div class="body">
+    <h2>Ruta de construcción</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Bloque</th><th>Entregable</th><th>Termina cuando</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Sincronizador + esquema Postgres</td><td>30 días de contratos cargados y consultables</td></tr>
+          <tr><td>2</td><td>Reglas R1–R4 en SQL + puntaje</td><td>Una consulta devuelve los contratos alertables de ayer</td></tr>
+          <tr><td>3</td><td>Webhook WhatsApp + suscripción</td><td>Un número de prueba se suscribe y queda en la base</td></tr>
+          <tr><td>4</td><td>Redactor LLM + envío de plantilla</td><td>Llega la primera alerta real a un teléfono real</td></tr>
+          <tr><td>5</td><td>Q&amp;A conversacional + R5 semántica</td><td>El bot responde "¿por qué es malo?" con datos</td></tr>
+          <tr><td>6</td><td>Derecho de petición + guion de demo</td><td>El ciclo completo corre de punta a punta sin tocar nada</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      El orden no es negociable: sin el bloque 1 no hay producto, y el bloque 4 es el que se demuestra.
+      Si el tiempo se acaba, se cortan 5 y 6 — el MVP defendible es <em>llega una alerta cierta a un
+      WhatsApp real</em>.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="rail">§13<small>Abierto</small></div>
+  <div class="body">
+    <h2>Decisiones pendientes</h2>
+    <ol>
+      <li><strong>¿Suscripción por municipio o por entidad?</strong> Un municipio tiene alcaldía, hospital, ESE, instituto de deportes. Vigilar "Caucasia" es más natural para el ciudadano, pero exige mapear entidades a territorio.</li>
+      <li><strong>¿Umbral de valor mínimo?</strong> Alertar sobre un contrato de $3 millones probablemente sea ruido. Habría que calibrar contra el volumen real por municipio.</li>
+      <li><strong>¿Se alerta sobre personas naturales?</strong> El 80% de la contratación directa son prestaciones de servicios a individuos. Alertar sobre ellos es donde el riesgo legal de §9 se vuelve concreto.</li>
+      <li><strong>¿Número de prueba o número real?</strong> El de prueba limita la demo a 5 destinatarios pero está listo hoy; el real exige verificación de negocio.</li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <div>Centinela SECOP · PRD v1</div>
+  <div>Datos verificados contra datos.gov.co · 15 ago 2026</div>
+</footer>
+
+</div>

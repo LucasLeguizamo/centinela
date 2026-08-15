@@ -1,0 +1,8 @@
+{
+  "name": "centinela",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@kapso/workflows": "^0.3.1"
+  }
+}
