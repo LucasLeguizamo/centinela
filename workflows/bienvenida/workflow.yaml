@@ -1,8 +1,0 @@
-definition: definition.json
-name: Bienvenida y suscripción a alertas
-slug: bienvenida
-status: draft
-triggers:
-  - active: true
-    phoneNumberId: "1243233552205505"
-    triggerType: inbound_message
