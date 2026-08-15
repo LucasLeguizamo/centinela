@@ -4,10 +4,8 @@
 // suscriptor en su municipio, y le escribe solo a quien de verdad lo sintió.
 
 import { execFile } from "node:child_process";
-import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { promisify } from "node:util";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import {
   sismosRecientes,
   evaluarAlerta,
@@ -16,28 +14,13 @@ import {
   mensajeReplicas,
 } from "./sismos.js";
 import { avisosParaColombia, mensajeTsunami } from "./tsunami.js";
+import { leerSuscriptores, leerEnviados, marcarEnviados } from "./db.js";
 
 const ejecutar = promisify(execFile);
-const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SUSCRIPTORES = join(RAIZ, "data", "suscriptores.json");
-const ENVIADOS = join(RAIZ, "data", "enviados.json");
 
 // Número "Melo". Producción, CONNECTED, verificado.
 const PHONE_NUMBER_ID = "1243233552205505";
 const KAPSO = join(process.env.HOME, "Library", "pnpm", "kapso");
-
-async function leerJson(ruta, porDefecto) {
-  try {
-    return JSON.parse(await readFile(ruta, "utf8"));
-  } catch {
-    return porDefecto;
-  }
-}
-
-async function escribirJson(ruta, valor) {
-  await mkdir(dirname(ruta), { recursive: true });
-  await writeFile(ruta, JSON.stringify(valor, null, 2));
-}
 
 /**
  * ponytail: el envío va por el CLI de Kapso en vez de su API HTTP. Reusa la
@@ -57,7 +40,7 @@ async function enviarWhatsapp(telefono, texto) {
 }
 
 export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) {
-  const suscriptores = await leerJson(SUSCRIPTORES, []);
+  const suscriptores = await leerSuscriptores();
   if (suscriptores.length === 0) {
     console.log("No hay suscriptores todavía.");
     return [];
@@ -65,7 +48,8 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
 
   // Clave evento+teléfono: si a alguien ya se le avisó de este sismo, no se
   // le repite aunque el USGS revise la magnitud diez veces (y lo hace).
-  const enviados = new Set(await leerJson(ENVIADOS, []));
+  const enviados = await leerEnviados();
+  const nuevos = [];
   const sismos = clasificarReplicas(
     await sismosRecientes({ desdeMinutos, magnitudMinima: 2.5 })
   );
@@ -101,6 +85,7 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
           const wamid = await enviarWhatsapp(sus.telefono, texto);
           console.log(`→ ${sus.telefono} (${lugar.nombre}) TSUNAMI ${aviso.categoria} · ${wamid}`);
           enviados.add(clave);
+          nuevos.push(clave);
         }
         resultados.push({ telefono: sus.telefono, ids: [clave], etiqueta: "tsunami" });
       }
@@ -138,13 +123,16 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
       } else {
         const wamid = await enviarWhatsapp(sus.telefono, envio.texto);
         console.log(`→ ${sus.telefono} (${lugar.nombre}) ${envio.etiqueta} · ${wamid}`);
-        envio.ids.forEach((id) => enviados.add(`${id}:${sus.telefono}`));
+        envio.ids.forEach((id) => {
+          enviados.add(`${id}:${sus.telefono}`);
+          nuevos.push(`${id}:${sus.telefono}`);
+        });
       }
       resultados.push({ telefono: sus.telefono, ids: envio.ids, etiqueta: envio.etiqueta });
     }
   }
 
-  if (!seco) await escribirJson(ENVIADOS, [...enviados]);
+  if (!seco) await marcarEnviados(nuevos);
   if (resultados.length === 0) console.log("Nada que alertar.");
   return resultados;
 }

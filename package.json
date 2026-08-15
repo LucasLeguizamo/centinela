@@ -6,6 +6,8 @@
     "@kapso/workflows": "^0.3.1"
   },
   "scripts": {
-    "test": "node src/sismos.test.js && node src/responder.test.js && node src/tsunami.test.js"
+    "test": "node src/sismos.test.js && node src/responder.test.js && node src/tsunami.test.js && node src/fuentes/acopios-emergency.test.js",
+    "ingesta": "node src/ingesta.js",
+    "migrar": "node src/migrar.js"
   }
 }

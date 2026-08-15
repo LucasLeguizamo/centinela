@@ -8,10 +8,8 @@
 //   node src/responder.js           → responde de verdad
 
 import { execFile } from "node:child_process";
-import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { promisify } from "node:util";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import {
   sismosRecientes,
   clasificarReplicas,
@@ -21,27 +19,17 @@ import {
   normalizarMunicipio,
   MUNICIPIOS,
 } from "./sismos.js";
+import {
+  leerSuscriptores,
+  leerRespondidos,
+  marcarRespondidos,
+  buscarRecursos,
+} from "./db.js";
 
 const ejecutar = promisify(execFile);
-const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SUSCRIPTORES = join(RAIZ, "data", "suscriptores.json");
-const RESPONDIDOS = join(RAIZ, "data", "respondidos.json");
 
 const PHONE_NUMBER_ID = "1243233552205505";
 const KAPSO = join(process.env.HOME, "Library", "pnpm", "kapso");
-
-async function leerJson(ruta, porDefecto) {
-  try {
-    return JSON.parse(await readFile(ruta, "utf8"));
-  } catch {
-    return porDefecto;
-  }
-}
-
-async function escribirJson(ruta, valor) {
-  await mkdir(dirname(ruta), { recursive: true });
-  await writeFile(ruta, JSON.stringify(valor, null, 2));
-}
 
 function sinAcentos(texto) {
   return texto.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -50,17 +38,45 @@ function sinAcentos(texto) {
 /**
  * Clasificación por palabras clave, no por modelo.
  *
- * ponytail: son cinco intenciones y la gente las escribe casi igual siempre.
- * Un LLM acá costaría plata y latencia para adivinar lo que un `includes`
- * resuelve. El techo: en cuanto aparezca una sexta intención o la gente
- * empiece a preguntar cosas abiertas, esto pasa a ser un clasificador de
- * verdad y el fallback deja de alcanzar.
+ * Son ocho intenciones y la gente las escribe casi igual siempre. Un LLM acá
+ * costaría plata y latencia para adivinar lo que un `test` resuelve, y sobre
+ * todo abriría la puerta a que el bot invente una dirección: por este camino
+ * todo dato concreto sale de una consulta, no de un modelo.
+ *
+ * ponytail: el techo sigue ahí y ahora está más cerca. Estas ocho cubren la
+ * pregunta directa ("dónde llevo la ayuda") pero no la abierta ("junté ropa
+ * usada y pañales, ¿me sirve de algo?"). Eso pide un clasificador de verdad
+ * con tool-calling sobre estas mismas consultas — el modelo redacta, las
+ * herramientas responden.
  */
 export function clasificarIntencion(texto) {
   const t = sinAcentos(texto);
 
+  // La baja gana sobre todo lo demás: si alguien quiere irse, se va.
   if (/\b(baja|cancelar|parar|stop|no quiero)\b/.test(t)) return "baja";
   if (/\b(cambiar|mudar|otra ciudad|me mude)\b/.test(t)) return "cambiar";
+
+  // De lo más específico a lo más general: "donar sangre" es sangre, "donar
+  // plata" es dinero, y "donar" a secas es llevar cosas a un acopio, que es
+  // lo que la gente quiere decir la mayoría de las veces.
+  if (/\bsangre\b|hemocentro|banco de sangre/.test(t)) return "sangre";
+  if (
+    // Los verbos van con sufijo abierto: la gente escribe "transfiero",
+    // "consigno" y "giro", no el infinitivo del diccionario.
+    /(donar|dono|donacion|aportar|transfer\w*|consign\w*)[^.]{0,25}(plata|dinero|efectivo|pesos|cuenta)/.test(t) ||
+    /(plata|dinero|efectivo)[^.]{0,25}(donar|dono|aportar|transfer\w*|consign\w*|cuenta)/.test(t) ||
+    /\bcuenta\b[^.]{0,25}(transfer\w*|consign\w*|donar|plata|dinero)/.test(t) ||
+    /\b(nequi|daviplata|bancolombia|bre ?-?b|cuenta bancaria|numero de cuenta)\b/.test(t)
+  )
+    return "donar";
+  if (
+    /\bacopios?\b|punto de (acopio|recoleccion)/.test(t) ||
+    /donde (los |las |la |lo )?(llevo|llevar|dono|donar|entrego|entregar|dejo|dejar)/.test(t) ||
+    /que (puedo |se |les |)(donar|dona|reciben|recibe|sirve)/.test(t) ||
+    /(donde|como) (puedo )?ayudar|quiero ayudar|llevar (comida|ropa|mercado|ayudas?)/.test(t)
+  )
+    return "acopio";
+
   if (/\b(replica|replicas|volvio a temblar|otra vez)\b/.test(t)) return "replicas";
   if (/(que tan fuerte|cuanto fue|magnitud|que paso|que fue eso|temblo|tembl)/.test(t))
     return "detalle";
@@ -81,7 +97,127 @@ async function contextoSismico(lugar) {
   return { principal, replicas };
 }
 
+/** Fecha corta para citar cuándo se verificó un dato. */
+function fechaCorta(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? null
+    : d.toLocaleDateString("es-CO", { timeZone: "America/Bogota", day: "numeric", month: "short" });
+}
+
+/**
+ * Una ficha de recurso, en el formato que WhatsApp lee bien.
+ *
+ * Siempre lleva fuente y fecha de verificación. No es adorno: la mitad de las
+ * preguntas que llegan son "¿esto es real?", y en una emergencia donde ya hay
+ * campañas falsas circulando, un dato sin procedencia vale menos que ninguno.
+ */
+function ficha(r) {
+  const lineas = [`*${r.nombre}*${r.verificado ? " ✓" : ""}`];
+
+  if (r.descripcion) lineas.push(`_${r.descripcion}_`);
+  if (r.direccion) lineas.push(`📍 ${r.direccion}`);
+  if (r.distancia_km != null) lineas.push(`📏 a ${r.distancia_km} km de vos`);
+  if (r.horario) lineas.push(`🕐 ${r.horario}`);
+  if (r.urgente?.length) lineas.push(`🔴 Más urgente: ${r.urgente.slice(0, 3).join(", ")}`);
+  else if (r.acepta?.length) lineas.push(`📦 Recibe: ${r.acepta.slice(0, 4).join(", ")}`);
+  if (r.telefono) lineas.push(`📞 +${r.telefono}`);
+
+  const verificado = fechaCorta(r.verificado_en);
+  if (verificado) lineas.push(`Verificado el ${verificado} · ${r.fuente}`);
+
+  return lineas.join("\n");
+}
+
+/**
+ * Recursos cerca, ampliando el radio antes de rendirse.
+ *
+ * 25 km sirve dentro de una ciudad; 80 km alcanza al municipio vecino, que es
+ * lo que necesita alguien en un pueblo donde no hay acopio propio. Decir "no
+ * hay nada" cuando lo hay a 40 km sería el peor resultado posible.
+ */
+async function recursosCerca(tipo, lugar) {
+  for (const radioKm of [25, 80]) {
+    const hallados = await buscarRecursos({
+      tipo,
+      lat: lugar.lat,
+      lon: lugar.lon,
+      radioKm,
+      limite: 3,
+    });
+    if (hallados.length > 0) return { hallados, radioKm };
+  }
+  return { hallados: [], radioKm: 80 };
+}
+
 export async function componerRespuesta(intencion, lugar) {
+  if (intencion === "acopio") {
+    const { hallados, radioKm } = await recursosCerca("acopio", lugar);
+
+    if (hallados.length === 0) {
+      return (
+        `No tengo ningún centro de acopio verificado a menos de ${radioKm} km de ${lugar.nombre}.\n\n` +
+        `El directorio completo, con 145 centros en 27 departamentos, está en:\n` +
+        `https://emergency-rosy.vercel.app\n\n` +
+        `Si conocés uno que falte, ahí mismo se puede registrar.`
+      );
+    }
+
+    return (
+      `Esto es lo que tengo cerca de ${lugar.nombre}:\n\n` +
+      hallados.map(ficha).join("\n\n") +
+      `\n\nAntes de salir, llamá para confirmar que siguen recibiendo: los horarios cambian de un día para otro.\n\n` +
+      `Directorio completo: https://emergency-rosy.vercel.app`
+    );
+  }
+
+  if (intencion === "sangre") {
+    const { hallados } = await recursosCerca("sangre", lugar);
+
+    if (hallados.length === 0) {
+      return (
+        `Todavía no tengo bancos de sangre cargados para ${lugar.nombre}. No te mando a una dirección que no pueda confirmar.\n\n` +
+        `Los puntos y jornadas verificados están acá:\n` +
+        `https://cuidarcolombia.vercel.app\n\n` +
+        `Dos cosas que sirven: la sangre se necesita durante semanas, no solo los primeros días, y conviene llamar antes porque muchas jornadas se llenan.`
+      );
+    }
+
+    return (
+      `Donación de sangre cerca de ${lugar.nombre}:\n\n` +
+      hallados.map(ficha).join("\n\n") +
+      `\n\nLlamá antes de ir: las jornadas se llenan y los horarios cambian.\n\n` +
+      `Más puntos verificados: https://cuidarcolombia.vercel.app`
+    );
+  }
+
+  if (intencion === "donar") {
+    const { hallados } = await recursosCerca("donacion", lugar);
+
+    // Regla dura: el bot no dicta números de cuenta.
+    //
+    // Ya hay campañas falsas suplantando entidades por WhatsApp y SMS, y un
+    // bot que recita una cuenta es el vector perfecto. Nombramos la
+    // organización y mandamos a su sitio oficial, donde el número está bajo
+    // el control de quien recibe la plata. Si el dato viaja por acá, tarde o
+    // temprano viaja uno equivocado.
+    const canales = hallados.length
+      ? hallados.map(ficha).join("\n\n")
+      : [
+          "• *Cruz Roja Colombiana*\n  https://www.cruzrojacolombiana.org",
+          "• *Fundación PLAN*\n  https://fundacionplan.org",
+          "• *Bancos de Alimentos ABACO*\n  https://bancosdealimentos.org.co",
+        ].join("\n\n");
+
+    return (
+      `Para donar dinero, andá siempre a la página oficial de la organización y sacá el dato de ahí:\n\n` +
+      canales +
+      `\n\n⚠️ No te fíes de cuentas que te lleguen por WhatsApp o SMS, ni siquiera si vienen reenviadas por alguien conocido. La Policía ya alertó de campañas falsas que suplantan entidades.\n\n` +
+      `Yo nunca te voy a mandar un número de cuenta: si te llega uno a mi nombre, no soy yo.`
+    );
+  }
+
   if (intencion === "baja") {
     return (
       "Listo, no te escribo más. 👋\n\n" +
@@ -98,8 +234,12 @@ export async function componerRespuesta(intencion, lugar) {
 
   if (intencion === "ayuda") {
     return (
-      "Te aviso cuando tiemble en tu ciudad y te digo qué tan fuerte se sintió *ahí*.\n\n" +
+      "Te aviso cuando tiemble en tu ciudad y te digo qué tan fuerte se sintió *ahí*. " +
+      "Y si querés ayudar, te digo dónde llevar las cosas.\n\n" +
       "Podés escribirme:\n" +
+      "• *dónde dono* — centros de acopio cerca tuyo\n" +
+      "• *donar sangre* — puntos y jornadas\n" +
+      "• *donar dinero* — canales oficiales verificados\n" +
       "• *qué tan fuerte fue* — detalle del último sismo\n" +
       "• *réplicas* — si hubo réplicas y cuántas\n" +
       "• *cambiar* — para cambiar de ciudad\n" +
@@ -177,10 +317,11 @@ async function entrantesRecientes(horas = 24) {
 }
 
 export async function atenderPreguntas({ seco = false } = {}) {
-  const suscriptores = await leerJson(SUSCRIPTORES, []);
-  const respondidos = new Set(await leerJson(RESPONDIDOS, []));
+  const suscriptores = await leerSuscriptores();
+  const respondidos = await leerRespondidos();
   const mensajes = await entrantesRecientes();
 
+  const nuevos = [];
   let atendidos = 0;
 
   for (const m of mensajes) {
@@ -207,11 +348,12 @@ export async function atenderPreguntas({ seco = false } = {}) {
       const wamid = await enviarWhatsapp(m.from, respuesta);
       console.log(`→ ${m.from} · "${texto}" → ${intencion} · ${wamid}`);
       respondidos.add(m.id);
+      nuevos.push(m.id);
     }
     atendidos++;
   }
 
-  if (!seco) await escribirJson(RESPONDIDOS, [...respondidos]);
+  if (!seco) await marcarRespondidos(nuevos);
   if (atendidos === 0) console.log("Nada que responder.");
   return atendidos;
 }

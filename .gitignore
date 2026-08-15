@@ -5,3 +5,4 @@ node_modules/
 .env.*
 data/enviados.json
 data/respondidos.json
+data/recursos.json
