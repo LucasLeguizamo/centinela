@@ -113,6 +113,9 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
     if (replicas.length > 0) {
       envios.push({
         texto: mensajeReplicas(replicas, lugar),
+        // La mayor representa al grupo en la plantilla: fuera de la ventana
+        // de 24 h solo cabe un sismo, y el que importa es el más fuerte.
+        sismo: replicas.reduce((a, b) => (b.magnitud > a.magnitud ? b : a)),
         ids: replicas.map((s) => s.id),
         etiqueta: `${replicas.length} réplica(s)`,
       });
@@ -126,7 +129,7 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
         const abierta = abiertas.has(sus.telefono);
         const wamid = abierta
           ? await enviarTexto(sus.telefono, envio.texto)
-          : await enviarAlertaSismica(sus.telefono, plantillaDe(envio.sismo ?? pendientes[0], lugar));
+          : await enviarAlertaSismica(sus.telefono, plantillaDe(envio.sismo, lugar));
         const via = abierta ? "texto" : "plantilla";
         console.log(`→ ${sus.telefono} (${lugar.nombre}) ${envio.etiqueta} · ${via} · ${wamid}`);
         envio.ids.forEach((id) => {
