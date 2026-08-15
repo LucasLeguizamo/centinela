@@ -3,6 +3,8 @@ node_modules/
 .DS_Store
 .env
 .env.*
+# el ejemplo sí se versiona: es la documentación de qué hace falta
+!.env.example
 data/enviados.json
 data/respondidos.json
 data/recursos.json
