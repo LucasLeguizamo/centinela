@@ -155,6 +155,8 @@ export async function extraer({ html } = {}) {
 
 async function descargar() {
   const res = await fetch(SITIO, {
+    // Un sitio que no responde no puede colgar la ingesta entera.
+    signal: AbortSignal.timeout(20_000),
     headers: {
       // Identificarse y dejar contacto es lo mínimo cuando uno lee el sitio de
       // otro cada media hora. Estas webs las mantiene una persona en plan

@@ -144,8 +144,14 @@ $$;
 -- ---------------------------------------------------------------------- RLS
 
 -- El bot escribe con la service key desde el servidor; nadie más toca esto.
+--
+-- `enviados` tiene que estar acá aunque parezca metadato: su clave es
+-- '<evento>:<telefono>', así que dejarla sin RLS publica la lista de
+-- teléfonos suscritos a cualquiera con la anon key. En Supabase una tabla del
+-- esquema public sin RLS queda expuesta por PostgREST.
 alter table suscriptores enable row level security;
 alter table respondidos  enable row level security;
+alter table enviados     enable row level security;
 alter table recursos     enable row level security;
 
 -- Los recursos son información pública de emergencia: lectura abierta para

@@ -7,6 +7,7 @@
   },
   "scripts": {
     "test": "node src/sismos.test.js && node src/responder.test.js && node src/tsunami.test.js && node src/fuentes/acopios-emergency.test.js",
-    "ingesta": "node src/ingesta.js"
+    "ingesta": "node src/ingesta.js",
+    "migrar": "node src/migrar.js"
   }
 }

@@ -32,8 +32,21 @@ async function leerJson(archivo, porDefecto) {
 }
 
 async function escribirJson(archivo, valor) {
-  await mkdir(DATOS, { recursive: true });
-  await writeFile(join(DATOS, archivo), JSON.stringify(valor, null, 2));
+  try {
+    await mkdir(DATOS, { recursive: true });
+    await writeFile(join(DATOS, archivo), JSON.stringify(valor, null, 2));
+  } catch (error) {
+    // En Vercel el filesystem es de solo lectura salvo /tmp. Si alguien
+    // despliega sin configurar Supabase, el error crudo es un EROFS sobre una
+    // ruta que no dice nada; este mensaje sí dice qué falta.
+    if (error.code === "EROFS" || error.code === "EACCES") {
+      throw new Error(
+        `No se pudo escribir ${archivo}: el filesystem es de solo lectura. ` +
+          `Configurá SUPABASE_URL y SUPABASE_SERVICE_KEY para persistir en Supabase.`
+      );
+    }
+    throw error;
+  }
 }
 
 // -------------------------------------------------------------- Supabase
@@ -49,6 +62,10 @@ async function escribirJson(archivo, valor) {
 async function pedir(ruta, opciones = {}) {
   const res = await fetch(`${URL_SUPABASE}/rest/v1/${ruta}`, {
     ...opciones,
+    // Sin plazo, un fetch colgado se lleva por delante todo el ciclo: en un
+    // cron serverless la función muere por tiempo máximo y esa corrida no
+    // alerta a nadie. Mejor fallar en 10 s y reintentar en la siguiente.
+    signal: AbortSignal.timeout(10_000),
     headers: {
       apikey: LLAVE_SUPABASE,
       Authorization: `Bearer ${LLAVE_SUPABASE}`,
@@ -74,7 +91,7 @@ export async function leerSuscriptores() {
 
 export async function guardarSuscriptor({ telefono, municipio }) {
   if (usandoSupabase) {
-    await pedir("suscriptores", {
+    await pedir("suscriptores?on_conflict=telefono", {
       method: "POST",
       headers: { Prefer: "resolution=merge-duplicates" },
       body: JSON.stringify({ telefono, municipio }),
@@ -155,22 +172,31 @@ export async function marcarEnviados(claves) {
  */
 export async function reemplazarRecursos(fuente, filas) {
   if (usandoSupabase) {
-    const vistos = filas.map((f) => f.hash);
-    await pedir("recursos", {
+    // Marca de agua de esta corrida. Sirve para apagar lo que ya no aparece
+    // sin tener que enumerar 145 hashes en la query string: se apaga lo que
+    // no se volvió a ver, que además escala a las fuentes que faltan.
+    const corrida = new Date().toISOString();
+
+    // `on_conflict` es obligatorio: la clave de deduplicación es (fuente,
+    // hash) y no la primaria. Sin este parámetro PostgREST resuelve contra
+    // `id`, que trae un uuid nuevo en cada fila, así que nunca hay conflicto
+    // que resolver y la segunda corrida revienta con duplicate key.
+    await pedir("recursos?on_conflict=fuente,hash", {
       method: "POST",
       headers: { Prefer: "resolution=merge-duplicates" },
       body: JSON.stringify(
         filas.map((f) => ({
           ...f,
           geo: f.lat != null && f.lon != null ? `POINT(${f.lon} ${f.lat})` : null,
-          visto_en: new Date().toISOString(),
+          visto_en: corrida,
           activo: true,
         }))
       ),
     });
-    const fuera = vistos.map((h) => `"${h}"`).join(",");
+
     await pedir(
-      `recursos?fuente=eq.${encodeURIComponent(fuente)}&hash=not.in.(${fuera})`,
+      `recursos?fuente=eq.${encodeURIComponent(fuente)}` +
+        `&visto_en=lt.${encodeURIComponent(corrida)}&activo=is.true`,
       { method: "PATCH", body: JSON.stringify({ activo: false }) }
     );
     return filas.length;

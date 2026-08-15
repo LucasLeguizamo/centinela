@@ -122,6 +122,7 @@ node src/comparar.js --dias 10     # un sismo visto desde varias ciudades
 
 node src/ingesta.js --seco         # extrae los recursos de ayuda, sin guardar
 node src/ingesta.js                # extrae y guarda
+node src/migrar.js                 # data/*.json → Supabase (idempotente)
 
 kapso build                        # compila workflows/**/workflow.ts a JSON
 kapso push                         # publica en Kapso (queda en draft)
@@ -141,6 +142,7 @@ Sin variables de entorno todo se guarda en `data/*.json` y el repo corre igual q
 
 ```bash
 psql "$SUPABASE_DB_URL" -f db/schema.sql
+node src/migrar.js                 # sube los data/*.json que ya existan
 ```
 
 No es una preferencia de estilo. En serverless el filesystem es efímero y cada invocación puede caer en otra instancia, así que un suscriptor guardado en una petición puede no existir en la siguiente, y `enviados` —la clave que evita repetir una alerta— se reinicia sola. El fallo es intermitente y silencioso: alguien deja de recibir alertas, o las recibe cinco veces a las 3 de la mañana.
