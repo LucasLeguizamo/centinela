@@ -13,6 +13,30 @@
 create extension if not exists postgis;
 create extension if not exists unaccent;
 
+-- unaccent() no está marcada IMMUTABLE (depende del diccionario de búsqueda
+-- activo), y una columna generada exige IMMUTABLE. Este wrapper fija el
+-- diccionario 'unaccent' explícitamente, lo que sí es determinista.
+--
+-- Tiene que ser `language plpgsql`, no `sql`: una función SQL simple se
+-- inlinea en el plan, y ahí reaparece unaccent() (volátil) justo donde
+-- Postgres chequea inmutabilidad para la columna generada. plpgsql nunca se
+-- inlinea, así que sólo cuenta la volatilidad declarada.
+--
+-- `set search_path` fijo cierra el aviso de seguridad de que una función sin
+-- search_path fijo es secuestrable por un rol que cree un objeto con el mismo
+-- nombre en un schema anterior en la resolución.
+create or replace function immutable_unaccent(text)
+returns text
+language plpgsql
+immutable
+parallel safe
+set search_path = 'public'
+as $$
+begin
+  return unaccent('unaccent', $1);
+end;
+$$;
+
 -- ---------------------------------------------------------------- suscriptores
 
 create table if not exists suscriptores (
@@ -50,6 +74,20 @@ do $$ begin
     ('acopio', 'donacion', 'sangre', 'albergue', 'vivienda', 'voluntariado');
 exception when duplicate_object then null;
 end $$;
+
+-- El cast `tipo::text` usa enum_out por debajo, que también es STABLE y no
+-- IMMUTABLE —mismo problema que unaccent(), mismo tipo de solución.
+create or replace function immutable_enum_text(recurso_tipo)
+returns text
+language plpgsql
+immutable
+parallel safe
+set search_path = 'public'
+as $$
+begin
+  return $1::text;
+end;
+$$;
 
 create table if not exists recursos (
   id            uuid primary key default gen_random_uuid(),
@@ -99,13 +137,19 @@ create index if not exists recursos_tipo_municipio_idx
 alter table recursos
   add column if not exists clave text
   generated always as (
-    tipo::text || '|' ||
-    lower(regexp_replace(unaccent(nombre), '[^a-zA-Z0-9]', '', 'g'))
+    immutable_enum_text(tipo) || '|' ||
+    lower(regexp_replace(immutable_unaccent(nombre), '[^a-zA-Z0-9]', '', 'g'))
   ) stored;
 
 create index if not exists recursos_clave_idx on recursos (clave) where activo;
 
-create or replace view recursos_unicos as
+-- `security_invoker = true`: sin esto la vista corre con los permisos de
+-- quien la creó (el owner), no de quien consulta, lo que puede saltarse RLS
+-- de formas no obvias. Con security_invoker vuelve a evaluar los permisos del
+-- rol que consulta, que es lo esperado dado que `recursos` ya tiene una
+-- policy de lectura pública explícita.
+create or replace view recursos_unicos
+  with (security_invoker = true) as
   select distinct on (clave) *
   from recursos
   where activo
@@ -128,7 +172,9 @@ returns table (
   fuente text, fuente_url text, verificado boolean, verificado_en timestamptz,
   distancia_km double precision
 )
-language sql stable as $$
+language sql stable
+set search_path = 'public'
+as $$
   select r.nombre, r.descripcion, r.direccion, r.municipio,
          r.telefono, r.horario, r.acepta, r.urgente,
          r.fuente, r.fuente_url, r.verificado, r.verificado_en,

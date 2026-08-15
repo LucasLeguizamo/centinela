@@ -76,7 +76,13 @@ async function pedir(ruta, opciones = {}) {
   if (!res.ok) {
     throw new Error(`Supabase ${res.status} en ${ruta}: ${await res.text()}`);
   }
-  return res.status === 204 ? null : res.json();
+  // PostgREST no siempre devuelve 204 cuando el body viene vacío: un upsert
+  // con `resolution=merge-duplicates` puede responder 200 sin contenido. Fiar
+  // esto al status code revienta `res.json()` con "Unexpected end of JSON
+  // input"; leer el texto y sólo parsear si hay algo evita eso sin importar
+  // qué status haya devuelto PostgREST.
+  const texto = await res.text();
+  return texto ? JSON.parse(texto) : null;
 }
 
 const rpc = (nombre, args) =>
