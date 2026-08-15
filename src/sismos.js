@@ -41,7 +41,7 @@ export function normalizarMunicipio(texto) {
 }
 
 /** Distancia sobre la superficie, en km. */
-function distanciaSuperficie(lat1, lon1, lat2, lon2) {
+export function distanciaSuperficie(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const rad = (g) => (g * Math.PI) / 180;
   const dLat = rad(lat2 - lat1);
