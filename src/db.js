@@ -92,7 +92,7 @@ const rpc = (nombre, args) =>
 
 export async function leerSuscriptores() {
   if (!usandoSupabase) return leerJson("suscriptores.json", []);
-  return pedir("suscriptores?select=telefono,municipio");
+  return (await pedir("suscriptores?select=telefono,municipio")) ?? [];
 }
 
 export async function guardarSuscriptor({ telefono, municipio }) {
@@ -127,7 +127,9 @@ export async function borrarSuscriptor(telefono) {
 
 export async function leerRespondidos() {
   if (!usandoSupabase) return new Set(await leerJson("respondidos.json", []));
-  const filas = await pedir("respondidos?select=mensaje_id");
+  // `pedir` devuelve null si el cuerpo viene vacío; sin el `?? []` esto
+  // sería un TypeError en el ciclo, que corre sin nadie mirando.
+  const filas = (await pedir("respondidos?select=mensaje_id")) ?? [];
   return new Set(filas.map((f) => f.mensaje_id));
 }
 
@@ -149,7 +151,7 @@ export async function marcarRespondidos(ids) {
 
 export async function leerEnviados() {
   if (!usandoSupabase) return new Set(await leerJson("enviados.json", []));
-  const filas = await pedir("enviados?select=clave");
+  const filas = (await pedir("enviados?select=clave")) ?? [];
   return new Set(filas.map((f) => f.clave));
 }
 
@@ -274,7 +276,7 @@ export async function registrarCorrida(clave, { ok, filas = null, error = null }
 
 export async function leerFuentes() {
   if (!usandoSupabase) return leerJson("fuentes.json", []);
-  return pedir("fuentes?select=*");
+  return (await pedir("fuentes?select=*")) ?? [];
 }
 
 /** Dedupe entre fuentes: mismo tipo y mismo nombre normalizado es lo mismo. */
