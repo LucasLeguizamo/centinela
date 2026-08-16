@@ -40,7 +40,7 @@ El mensaje modelo del producto:
 >
 > Fuente: USGS
 
-La línea en negrita es el producto entero. Todo feed sísmico publica "M7.4"; solo Centinela dice qué te tocó a vos. Si una reescritura pierde esa línea, la reescritura está mal.
+La línea en negrita es el producto entero. Todo feed sísmico publica "M7.4"; solo Centinela dice qué te tocó a ti. Si una reescritura pierde esa línea, la reescritura está mal.
 
 ## Urgencia proporcional
 

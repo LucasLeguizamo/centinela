@@ -160,7 +160,7 @@ function ficha(r) {
 
   if (r.descripcion) lineas.push(`_${r.descripcion}_`);
   if (r.direccion) lineas.push(`📍 ${r.direccion}`);
-  if (r.distancia_km != null) lineas.push(`📏 a ${r.distancia_km} km de vos`);
+  if (r.distancia_km != null) lineas.push(`📏 a ${r.distancia_km} km de ti`);
   if (r.horario) lineas.push(`🕐 ${r.horario}`);
   if (r.urgente?.length) lineas.push(`🔴 Más urgente: ${r.urgente.slice(0, 3).join(", ")}`);
   else if (r.acepta?.length) lineas.push(`📦 Recibe: ${r.acepta.slice(0, 4).join(", ")}`);
@@ -198,7 +198,7 @@ const TEXTOS = {
   acopio: {
     conLugares: (l) => `Esto es lo que tengo cerca de ${l.nombre}:`,
     cierre: "Antes de salir, llamá para confirmar que siguen recibiendo: los horarios cambian de un día para otro.",
-    sinLugares: (l) => `No tengo ningún centro de acopio verificado cerca de ${l.nombre}, pero acá podés buscar en todo el país:`,
+    sinLugares: (l) => `No tengo ningún centro de acopio verificado cerca de ${l.nombre}, pero acá puedes buscar en todo el país:`,
   },
   sangre: {
     conLugares: (l) => `Donación de sangre cerca de ${l.nombre}:`,
@@ -207,7 +207,7 @@ const TEXTOS = {
   },
   voluntariado: {
     sinLugares: () => "Para poner el tiempo o el oficio:",
-    cierre: "Si sos ingeniero, arquitecto o estudiante de esas áreas, decilo al registrarte: hay convocatorias específicas para evaluar estructuras.",
+    cierre: "Si eres ingeniero, arquitecto o estudiante de esas áreas, dilo al registrarte: hay convocatorias específicas para evaluar estructuras.",
   },
   alojamiento_ofrecer: {
     sinLugares: () => "Para ofrecer un espacio a alguien que perdió su casa:",
@@ -266,7 +266,7 @@ async function responderCategoria(categoria, lugar) {
 
   if (sitios.length === 0) {
     // No hay nada que cubra su zona. Antes de rendirse: decirle qué existe y
-    // hasta dónde llega. "Existe pero no llega a vos" es información útil;
+    // hasta dónde llega. "Existe pero no llega a ti" es información útil;
     // el silencio lo deja pensando que lo suyo no le sirve a nadie.
     const nombres = Object.fromEntries(
       Object.entries(MUNICIPIOS).map(([clave, m]) => [clave, m.nombre])
@@ -279,7 +279,7 @@ async function responderCategoria(categoria, lugar) {
     if (otras.length === 0 && fuera.length === 0) {
       return (
         `Todavía no tengo nada verificado de eso para ${lugar.nombre}, y prefiero decírtelo a mandarte a un sitio que no te sirva.\n\n` +
-        `Escribime más adelante: estoy sumando fuentes nuevas cada día.`
+        `Escríbeme más adelante: estoy sumando fuentes nuevas cada día.`
       );
     }
 
@@ -302,7 +302,7 @@ function menuTexto(menu) {
   return (
     `${menu.titulo}\n\n` +
     menu.opciones.map((o) => `• *${o.titulo}* — ${o.detalle}`).join("\n") +
-    `\n\nEscribime la que necesites. Podés pedirme varias a la vez.`
+    `\n\nEscribime la que necesites. Puedes pedirme varias a la vez.`
   );
 }
 
@@ -347,7 +347,7 @@ export async function componerRespuesta(intencion, lugar, texto = "") {
   if (intencion === "baja") {
     return (
       "Listo, no te escribo más. 👋\n\n" +
-      "Si algún día querés volver, escribime y te suscribo otra vez en un mensaje."
+      "Si algún día quieres volver, escribime y te suscribo otra vez en un mensaje."
     );
   }
 
@@ -364,7 +364,7 @@ export async function componerRespuesta(intencion, lugar, texto = "") {
       "Y te conecto con la ayuda, para los dos lados:\n\n" +
       "• *QUIERO AYUDAR* — llevar cosas, donar, sangre, voluntariado, alojamiento\n" +
       "• *NECESITO AYUDA* — buscar a alguien, mascota perdida, dónde dormir, reportar daños\n\n" +
-      "También podés escribirme directo:\n" +
+      "También puedes escribirme directo:\n" +
       "• *qué tan fuerte fue* — detalle del último sismo\n" +
       "• *réplicas* — si hubo réplicas y cuántas\n" +
       "• *cambiar* — para cambiar de ciudad\n" +
@@ -409,7 +409,7 @@ export async function componerRespuesta(intencion, lugar, texto = "") {
   return (
     `El último que se sintió en ${lugar.nombre} fue un M${principal.magnitud} el ${cuando}\n\n` +
     `📍 Epicentro: ${principal.lugar}\n` +
-    `📏 A ${alerta.distanciaKm} km de vos, ${Math.round(principal.profundidadKm)} km de profundidad\n` +
+    `📏 A ${alerta.distanciaKm} km de ti, ${Math.round(principal.profundidadKm)} km de profundidad\n` +
     `💥 En ${lugar.nombre} se sintió *${describirIntensidad(mmi).etiqueta}*\n\n` +
     (replicas.length > 0 ? `Después vinieron ${replicas.length} réplica(s).\n\n` : "") +
     `La magnitud (M${principal.magnitud}) es del sismo; lo que sentiste depende de qué tan lejos y qué tan hondo fue.\n\n` +
