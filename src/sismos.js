@@ -1,7 +1,7 @@
 // Detección de sismos (US-002) e intensidad en la ubicación del usuario (US-003).
 //
 // La tesis del producto vive acá: todo el mundo publica la magnitud del
-// epicentro; nadie te dice qué te tocó a vos. La magnitud es un número del
+// epicentro; nadie te dice qué te tocó a ti. La magnitud es un número del
 // sismo, la intensidad es un número de tu casa.
 
 const USGS = "https://earthquake.usgs.gov/fdsnws/event/1/query";

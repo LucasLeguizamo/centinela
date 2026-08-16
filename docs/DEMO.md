@@ -1,6 +1,6 @@
 # Guion de demo — 3 minutos
 
-**Tesis a defender:** todo el mundo publica la magnitud del epicentro. Nadie te dice qué te tocó a vos.
+**Tesis a defender:** todo el mundo publica la magnitud del epicentro. Nadie te dice qué te tocó a ti.
 
 ---
 
@@ -27,7 +27,7 @@ rm -f data/enviados.json && pnpm test
 >
 > Los Android sonaron unos segundos antes. Los iPhone no sonaron.
 >
-> No fue una falla. **Apple solo opera alertas sísmicas en Estados Unidos y Taiwán.** Si tenés un iPhone en Colombia, no tenés nada.
+> No fue una falla. **Apple solo opera alertas sísmicas en Estados Unidos y Taiwán.** Si tienes un iPhone en Colombia, no tienes nada.
 
 Pausa. Dejar que aterrice.
 

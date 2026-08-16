@@ -42,7 +42,7 @@ Todo lo que no sirva a esa frase se corta.
 - [ ] Traducir MMI a lenguaje humano: *no se sintió / leve / moderado / fuerte*
 
 **Prioridad:** Must · **Esfuerzo:** M · **Depende de:** US-001, US-002
-*Este es el diferencial entero del producto. Google y USGS avisan por magnitud; nadie te dice qué te tocó a vos. Si se corta esto, Centinela es un feed de noticias.*
+*Este es el diferencial entero del producto. Google y USGS avisan por magnitud; nadie te dice qué te tocó a ti. Si se corta esto, Centinela es un feed de noticias.*
 
 ### US-004 · Umbral de alerta
 **Como** ciudadano **quiero** que solo me escriban cuando de verdad se sintió **para** no ignorar el bot a la semana.

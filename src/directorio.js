@@ -37,7 +37,7 @@ export const SITIOS = [
     url: "https://colombiatebusca.com",
     categorias: { buscar_persona: 1 },
     cobertura: "nacional",
-    que: "El registro ciudadano más grande: 5.416 personas reportadas y 1.137 ya localizadas. Podés publicar un caso con foto y generar un cartel para imprimir.",
+    que: "El registro ciudadano más grande: 5.416 personas reportadas y 1.137 ya localizadas. Puedes publicar un caso con foto y generar un cartel para imprimir.",
     revisadoEnVivo: true,
   },
   {
@@ -75,7 +75,7 @@ export const SITIOS = [
     url: "https://emergency-rosy.vercel.app",
     categorias: { acopio: 1 },
     cobertura: "nacional",
-    que: "145 centros en 27 departamentos, con horarios y qué recibe cada uno. Podés registrar uno que falte.",
+    que: "145 centros en 27 departamentos, con horarios y qué recibe cada uno. Puedes registrar uno que falte.",
     revisadoEnVivo: true,
   },
   {
@@ -111,7 +111,7 @@ export const SITIOS = [
     url: "https://helpthemdirectly.org/es/",
     categorias: { donar: 1, necesito_dinero: 1 },
     cobertura: "nacional",
-    que: "Conecta familias afectadas con quien quiere ayudarlas directamente. No recibe ni administra plata: cada donación va a la cuenta de la familia. También podés publicar tu propio caso.",
+    que: "Conecta familias afectadas con quien quiere ayudarlas directamente. No recibe ni administra plata: cada donación va a la cuenta de la familia. También puedes publicar tu propio caso.",
     revisadoEnVivo: true,
   },
   {
@@ -140,7 +140,7 @@ export const SITIOS = [
     url: "https://terremotovenezuela.com",
     categorias: { reportar_dano: 1 },
     cobertura: "nacional",
-    que: "Mapea daños estructurales edificio por edificio. Podés reportar el tuyo con hasta ocho fotos y hay grupos de WhatsApp por ciudad.",
+    que: "Mapea daños estructurales edificio por edificio. Puedes reportar el tuyo con hasta ocho fotos y hay grupos de WhatsApp por ciudad.",
     revisadoEnVivo: true,
   },
 ];
@@ -161,7 +161,7 @@ export const ORGANIZACIONES = [
 /** Las dos puertas de entrada del menú de WhatsApp. */
 export const MENUS = {
   ayudar: {
-    titulo: "¿En qué querés ayudar?",
+    titulo: "¿En qué quieres ayudar?",
     opciones: [
       { id: "acopio", titulo: "Llevar cosas", detalle: "Mercado, ropa, aseo" },
       { id: "donar", titulo: "Donar dinero", detalle: "Canales verificados" },
@@ -171,7 +171,7 @@ export const MENUS = {
     ],
   },
   necesito: {
-    titulo: "¿Qué necesitás?",
+    titulo: "¿Qué necesitas?",
     opciones: [
       { id: "buscar_persona", titulo: "Buscar a alguien", detalle: "Reportar o consultar" },
       { id: "mascota", titulo: "Perdí mi mascota", detalle: "Reportar o buscar" },

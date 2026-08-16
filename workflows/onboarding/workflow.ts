@@ -39,7 +39,7 @@ workflow.addNode("pedir_ciudad", {
     "Te aviso cuando tiemble donde estás, y qué tan fuerte se sintió ahí.\n\n" +
     "El aviso llega después del temblor, no antes.\n\n" +
     "¿En qué ciudad estás?",
-  footerText: "Escribí AYUDA si necesitás o querés dar una mano",
+  footerText: "Escribe AYUDA si necesitas o quieres dar una mano",
   listButtonText: "Elegir ciudad",
   listSections: [
     // WhatsApp permite 10 filas en total, no por sección. Elegidas por

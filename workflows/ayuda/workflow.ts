@@ -27,9 +27,9 @@ workflow.addNode("puertas", {
   interactiveType: "buttons",
   bodyText:
     "¿Con qué te ayudo?\n\n" +
-    "Si querés aportar, te digo dónde y qué se necesita.\n" +
+    "Si quieres aportar, te digo dónde y qué se necesita.\n" +
     "Si lo estás pasando mal, te conecto con quien puede echarte una mano.",
-  footerText: "Podés volver acá escribiendo AYUDA",
+  footerText: "Puedes volver acá escribiendo AYUDA",
   buttons: [
     { id: "quiero_ayudar", title: "Quiero ayudar" },
     { id: "necesito_ayuda", title: "Necesito ayuda" },
@@ -52,8 +52,8 @@ workflow.addNode("menu_ayudar", {
   type: "send_interactive",
   interactiveType: "list",
   headerType: "text",
-  headerText: "¿En qué querés ayudar?",
-  bodyText: "Elegí una y te digo dónde, según donde estés. Después podés pedirme otra.",
+  headerText: "¿En qué quieres ayudar?",
+  bodyText: "Elige una y te digo dónde, según donde estés. Después puedes pedirme otra.",
   footerText: "Todo lo que te paso lleva fuente y fecha",
   listButtonText: "Ver opciones",
   listSections: [
@@ -75,13 +75,13 @@ workflow.addNode("menu_necesito", {
   type: "send_interactive",
   interactiveType: "list",
   headerType: "text",
-  headerText: "¿Qué necesitás?",
-  bodyText: "Elegí una y te paso a dónde acudir, lo más cerca que tenga.",
+  headerText: "¿Qué necesitas?",
+  bodyText: "Elige una y te paso a dónde acudir, lo más cerca que tenga.",
   footerText: "Si no hay nada cerca, te lo digo en vez de inventarlo",
   listButtonText: "Ver opciones",
   listSections: [
     {
-      title: "Qué necesitás",
+      title: "Qué necesitas",
       rows: [
         { id: "buscar_persona", title: "Buscar a alguien", description: "Reportar o consultar" },
         { id: "mascota", title: "Perdí mi mascota", description: "Reportar o buscar" },

@@ -1,0 +1,1249 @@
+/* ============================================================================
+   Centinela · sistema de diseño
+   ----------------------------------------------------------------------------
+   Traducción al web de la guía de interfaces de Apple. Tres ideas la ordenan:
+
+   1. Un solo acento, gastado en un solo sitio. Todo lo sísmico —la onda, la
+      intensidad, la alerta— va en ámbar. El resto es neutro. Si el naranja
+      apareciera también en botones y enlaces dejaría de significar "esto es
+      el sismo".
+   2. Los neutros llevan un sesgo cálido hacia el acento. Un gris puro se lee
+      como no elegido.
+   3. La tipografía del sistema por defecto: ya trae tamaño óptico, tablas de
+      tracking y ajuste de legibilidad que ninguna fuente cargada por CDN nos
+      daría gratis.
+   ========================================================================= */
+
+:root {
+  /* Superficies, de más al fondo a más al frente. */
+  --paper: #FBFAF9;
+  --surface: #FFFFFF;
+  --surface-2: #F4F2F0;
+  --sunken: #EFECE9;
+
+  /* Tinta. `mid` es para texto secundario que aún debe leerse cómodo. */
+  --ink: #16130F;
+  --mid: #5D564E;
+  --faint: #8B8279;
+
+  --rule: #E4DFDA;
+  --rule-strong: #CFC8C1;
+
+  /* El acento. Solo sismo. */
+  --signal: #D9480F;
+  --signal-soft: #FDEDE4;
+  --signal-ink: #B03A0B;
+
+  /* Semánticos, aparte del acento a propósito. */
+  --ok: #1E6B45;
+  --ok-soft: #E3F0E9;
+
+  /* Material translúcido de la chrome flotante. */
+  --glass: rgba(251, 250, 249, 0.72);
+  --glass-edge: rgba(255, 255, 255, 0.75);
+  --shadow-sm: 0 1px 2px rgba(22, 19, 15, 0.05), 0 4px 12px rgba(22, 19, 15, 0.04);
+  --shadow-lg: 0 2px 6px rgba(22, 19, 15, 0.06), 0 24px 60px rgba(22, 19, 15, 0.1);
+
+  /* Ritmo vertical. En rem para que respete el tamaño de letra del sistema. */
+  --gutter: clamp(1.25rem, 5vw, 2.5rem);
+  --ancho: 68rem;
+  --seccion: clamp(5rem, 13vh, 9rem);
+}
+
+/* La guarda `:not([data-theme="light"])` deja que una elección explícita del
+   usuario gane sobre el sistema operativo. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0C0A09;
+    --surface: #1A1613;
+    --surface-2: #14110E;
+    --sunken: #272220;
+
+    --ink: #F5F1EC;
+    --mid: #B5ADA4;
+    --faint: #8F8780;
+
+    --rule: #352F2A;
+    --rule-strong: #4A423B;
+
+    --signal: #FF7A45;
+    --signal-soft: #3A1D12;
+    --signal-ink: #FFA077;
+
+    --ok: #6FBE93;
+    --ok-soft: #12271C;
+
+    --glass: rgba(12, 10, 9, 0.68);
+    --glass-edge: rgba(255, 255, 255, 0.09);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.45), 0 24px 60px rgba(0, 0, 0, 0.5);
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #0C0A09;
+  --surface: #1A1613;
+  --surface-2: #14110E;
+  --sunken: #272220;
+
+  --ink: #F5F1EC;
+  --mid: #B5ADA4;
+  --faint: #8F8780;
+
+  --rule: #352F2A;
+  --rule-strong: #4A423B;
+
+  --signal: #FF7A45;
+  --signal-soft: #3A1D12;
+  --signal-ink: #FFA077;
+
+  --ok: #6FBE93;
+  --ok-soft: #12271C;
+
+  --glass: rgba(12, 10, 9, 0.68);
+  --glass-edge: rgba(255, 255, 255, 0.09);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.45), 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+* { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* ---------------------------------------------------------------- tipografía
+
+   El tracking es específico del tamaño, nunca uno solo para todo. El texto
+   grande necesita tracking negativo —al crecer, las letras se leen demasiado
+   separadas— y el pequeño necesita un poco de positivo para respirar. El
+   interlineado va al revés que el tamaño.                                    */
+
+.display {
+  font-size: clamp(2.5rem, 7.2vw, 5.25rem);
+  line-height: 1.02;
+  letter-spacing: -0.028em;
+  font-weight: 700;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.h2 {
+  font-size: clamp(1.875rem, 4.4vw, 3rem);
+  line-height: 1.07;
+  letter-spacing: -0.022em;
+  font-weight: 700;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.h3 {
+  font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+  line-height: 1.22;
+  letter-spacing: -0.012em;
+  font-weight: 650;
+  margin: 0;
+}
+
+.lead {
+  font-size: clamp(1.125rem, 2.1vw, 1.375rem);
+  line-height: 1.5;
+  letter-spacing: -0.008em;
+  color: var(--mid);
+  margin: 0;
+  max-width: 34em;
+}
+
+p { margin: 0; max-width: 38em; }
+
+.etiqueta {
+  font-size: 0.75rem;
+  line-height: 1.3;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--faint);
+  margin: 0;
+}
+
+.dato {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+strong { font-weight: 650; }
+em { font-style: normal; color: var(--signal); font-weight: 600; }
+
+a { color: inherit; }
+
+/* ------------------------------------------------------------------ layout */
+
+.seccion {
+  padding-block: var(--seccion);
+  padding-inline: var(--gutter);
+}
+
+.contenido {
+  max-width: var(--ancho);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 5vw, 3.5rem);
+}
+
+.encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 46rem;
+}
+
+/* --------------------------------------------------------------- materiales
+
+   La chrome flota sobre el contenido en vez de comerse una franja fija. El
+   borde inferior claro simula la luz pegando en el canto del material; una
+   línea de 1px sería un divisor, que es otra cosa.                           */
+
+.chrome {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 50;
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid var(--glass-edge);
+}
+
+.tarjeta {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Superficies grandes se leen más gruesas: más blur y sombra más profunda. */
+.tarjeta-grande {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 1.75rem;
+  box-shadow: var(--shadow-lg);
+}
+
+/* ---------------------------------------------------------------- controles
+
+   El feedback vive en el pointer-down, no en el click. Esperar a que se
+   levante el dedo para reaccionar se siente muerto.                          */
+
+.boton {
+  appearance: none;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  font-weight: 600;
+  letter-spacing: -0.006em;
+  padding: 0.875rem 1.5rem;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  transition: transform 110ms cubic-bezier(0.32, 0.72, 0, 1),
+              background-color 160ms ease,
+              opacity 160ms ease;
+  touch-action: manipulation;
+}
+
+.boton:active { transform: scale(0.972); }
+
+.boton-primario { background: var(--ink); color: var(--paper); }
+.boton-primario:hover { opacity: 0.88; }
+
+.boton-secundario {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--rule-strong);
+}
+.boton-secundario:hover { background: var(--surface-2); }
+
+:where(a, button, [tabindex]):focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* --------------------------------------------------------------- utilidades */
+
+.fila { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.pila { display: flex; flex-direction: column; }
+
+.rejilla {
+  display: grid;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.regla { height: 1px; background: var(--rule); border: 0; margin: 0; }
+
+/* Borde de scroll: donde el contenido se cruza con la chrome flotante se
+   desvanece, en vez de cortarse contra un divisor duro. */
+.desvanecer-arriba {
+  mask-image: linear-gradient(to bottom, transparent, #000 2.5rem);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 2.5rem);
+}
+
+/* --------------------------------------------------- preferencias del visor
+
+   Movimiento reducido no significa sin respuesta: significa una alternativa
+   suave y no vestibular. Se conservan los cambios de opacidad, que ayudan a
+   entender, y se quitan los desplazamientos y el rebote.                     */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 160ms !important;
+  }
+  .boton:active { transform: none; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .chrome {
+    background: var(--paper);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom-color: var(--rule);
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root { --mid: var(--ink); --rule: var(--rule-strong); }
+  .chrome { background: var(--paper); backdrop-filter: none; }
+  .tarjeta, .tarjeta-grande { border-color: var(--rule-strong); }
+}
+
+/* ============================================================================
+   Componentes
+   ========================================================================= */
+
+/* -------------------------------------------------------------------- nav */
+
+.nav { transition: background-color 260ms ease, border-color 260ms ease; }
+
+/* Sobre el hero no hay nada que separar, así que el material no se enciende. */
+.nav:not(.nav-pegada) {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom-color: transparent;
+}
+
+.nav-contenido {
+  max-width: var(--ancho);
+  margin-inline: auto;
+  padding: 0.75rem var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.nav-marca {
+  font-weight: 680;
+  letter-spacing: -0.014em;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: auto;
+}
+
+.nav-punto {
+  width: 0.5rem; height: 0.5rem;
+  border-radius: 999px;
+  background: var(--signal);
+  box-shadow: 0 0 0 3px var(--signal-soft);
+}
+
+.nav-enlaces { display: none; gap: 1.5rem; font-size: 0.9375rem; color: var(--mid); }
+.nav-enlaces a { text-decoration: none; }
+.nav-enlaces a:hover { color: var(--ink); }
+
+.nav-cta { padding: 0.5rem 1rem; font-size: 0.9375rem; }
+
+@media (min-width: 62rem) { .nav-enlaces { display: flex; } }
+
+/* ------------------------------------------------------------------- hero */
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  /* Padding vertical simétrico: con `align-items: center` cualquier asimetría
+     descentra el contenido, y antes el inferior era 2rem mayor que el superior
+     y empujaba todo el hero hacia arriba. */
+  padding: 6.5rem var(--gutter);
+}
+
+/* El trazo vive por debajo del bloque de texto, no lo cruza. Atravesar la
+   línea de lectura convertía el sismograma en una raya perdida en vez de en
+   un fondo. */
+
+
+.hero-rejilla {
+  position: relative;
+  max-width: var(--ancho);
+  margin-inline: auto;
+  width: 100%;
+  display: grid;
+  gap: clamp(2rem, 5vw, 3.5rem);
+  align-items: center;
+}
+.hero-texto { display: flex; flex-direction: column; gap: 1.5rem; }
+
+/* El mapa solo se pone al lado cuando hay ancho de verdad. Antes de eso va
+   debajo del texto, donde se lee sin apretar nada. */
+@media (min-width: 62rem) {
+  .hero-rejilla { grid-template-columns: 1fr 24rem; }
+}
+@media (min-width: 74rem) {
+  .hero-rejilla { grid-template-columns: 1fr 27rem; }
+}
+
+.hero-titulo { max-width: 16ch; }
+.hero-acciones { margin-top: 0.5rem; }
+.hero-nota { color: var(--mid); max-width: 34em; font-size: 1.0625rem; }
+
+/* --------------------------------------------------------------- secciones */
+
+.seccion-alterna { background: var(--surface-2); }
+.seccion-cierre { padding-bottom: 0; }
+.encabezado-centro { align-items: center; text-align: center; margin-inline: auto; }
+.pregunta { color: var(--ink); max-width: 30em; }
+
+.nota {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 1.25rem;
+}
+.nota p:last-child { color: var(--mid); }
+
+/* ------------------------------------------------------------------- chat */
+
+.chat-marco {
+  max-width: 25rem;
+  margin-inline: auto;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 2.25rem;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  position: relative;
+  padding-top: 0.5rem;
+}
+
+.chat-notch {
+  width: 5.5rem; height: 1.5rem;
+  background: var(--ink);
+  border-radius: 999px;
+  margin: 0.25rem auto 0;
+  opacity: 0.9;
+}
+
+.chat-barra {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.chat-avatar {
+  width: 2.25rem; height: 2.25rem;
+  border-radius: 999px;
+  background: var(--signal);
+  color: #fff;
+  display: grid; place-items: center;
+  font-weight: 700;
+}
+
+.chat-nombre { font-weight: 640; font-size: 0.9375rem; }
+.chat-estado { font-size: 0.8125rem; color: var(--ok); }
+
+.chat-hilo {
+  display: flex; flex-direction: column; gap: 0.625rem;
+  padding: 1.25rem;
+  background: var(--sunken);
+  min-height: 26rem;
+}
+
+.burbuja {
+  max-width: 88%;
+  padding: 0.75rem 0.9375rem;
+  border-radius: 1.125rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  box-shadow: var(--shadow-sm);
+}
+.burbuja p { max-width: none; }
+.burbuja-hueco { height: 0.5rem; }
+
+.burbuja-persona {
+  align-self: flex-end;
+  background: var(--ink);
+  color: var(--paper);
+  border-bottom-right-radius: 0.375rem;
+}
+
+.burbuja-bot {
+  align-self: flex-start;
+  background: var(--surface);
+  border-bottom-left-radius: 0.375rem;
+}
+
+.burbuja-enfasis { color: inherit; font-weight: 640; }
+.burbuja-marca {
+  background: var(--signal-soft);
+  color: var(--signal-ink);
+  font-weight: 680;
+  padding: 0.125rem 0.25rem;
+  margin-inline: -0.25rem;
+  border-radius: 0.25rem;
+}
+
+/* ---------------------------------------------------------------- pruébalo */
+
+.probar { display: flex; gap: 2.5rem; align-items: center; justify-content: center; flex-wrap: wrap; }
+
+.qr {
+  display: block;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-lg);
+  line-height: 0;
+  transition: transform 140ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.qr:active { transform: scale(0.98); }
+.qr img { width: 13.75rem; height: 13.75rem; display: block; }
+
+.probar-texto { display: flex; flex-direction: column; gap: 1rem; max-width: 28rem; }
+.probar-nota { color: var(--mid); font-size: 0.9375rem; }
+
+.pie { border-top: 1px solid var(--rule); margin-top: var(--seccion); padding-block: 2.5rem; }
+.pie-contenido { flex-direction: row; justify-content: space-between; gap: 1rem; flex-wrap: wrap; font-size: 0.9375rem; color: var(--faint); }
+.pie a { color: var(--mid); }
+
+/* ============================================================================
+   Problema y solución
+   ========================================================================= */
+
+/* El mensaje genérico: deliberadamente plano y gris. Tiene que leerse como
+   insuficiente al lado de las tarjetas de abajo. */
+
+.muestras { display: grid; gap: clamp(1rem, 2.5vw, 1.25rem); grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
+
+.muestra {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  display: flex; flex-direction: column; gap: 0.75rem;
+  box-shadow: var(--shadow-sm);
+}
+/* La ciudad a la que no se escribe se muestra apagada: el silencio también es
+   una decisión del producto, y tiene que verse como tal. */
+.muestra-silencio { background: var(--surface-2); box-shadow: none; }
+
+.muestra-cabeza { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
+.muestra-ciudad { font-size: 1.375rem; font-weight: 680; letter-spacing: -0.016em; }
+.muestra-dist { color: var(--faint); font-size: 0.875rem; }
+
+.muestra-veredicto { font-size: 1.0625rem; font-weight: 620; }
+.muestra-veredicto-mudo { color: var(--faint); }
+
+.muestra-mensaje {
+  background: var(--signal-soft);
+  color: var(--signal-ink);
+  border-radius: 0.875rem;
+  padding: 0.75rem 0.9375rem;
+  font-size: 0.9375rem;
+  max-width: none;
+}
+.muestra-mensaje-mudo { background: var(--sunken); color: var(--faint); }
+
+.muestra-pie { font-size: 0.8125rem; color: var(--faint); }
+
+/* ============================================================================
+   Dos columnas (cómo se usa)
+   ========================================================================= */
+
+.dos-columnas { display: grid; gap: clamp(2rem, 5vw, 4rem); align-items: center; }
+.columna-texto { display: flex; flex-direction: column; gap: 2rem; }
+.columna-chat { display: flex; justify-content: center; }
+
+@media (min-width: 60rem) {
+  .dos-columnas { grid-template-columns: 1fr 25rem; }
+}
+
+.puntos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1rem; }
+.puntos li {
+  padding-left: 1.75rem; position: relative; color: var(--mid); max-width: 32em;
+}
+.puntos li::before {
+  content: ""; position: absolute; left: 0; top: 0.6875rem;
+  width: 0.5rem; height: 0.5rem; border-radius: 999px; background: var(--signal);
+}
+.puntos strong { color: var(--ink); }
+
+/* ============================================================================
+   WhatsApp interactivo
+   ----------------------------------------------------------------------------
+   El producto vive en WhatsApp, así que enseñarlo en tarjetas de web obliga a
+   imaginarse la traducción. Con los botones y la lista reales no hay nada que
+   imaginar — y como responde al dedo, se entiende en vez de mirarse.
+   ========================================================================= */
+
+.wa {
+  max-width: 30rem;
+  margin-inline: auto;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 1.75rem;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.wa-barra {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+}
+.wa-avatar {
+  width: 2.25rem; height: 2.25rem; border-radius: 999px;
+  background: var(--signal); color: #fff;
+  display: grid; place-items: center; font-weight: 700; flex: none;
+}
+.wa-quien { margin-right: auto; }
+.wa-nombre { font-weight: 640; font-size: 0.9375rem; }
+.wa-estado { font-size: 0.8125rem; color: var(--ok); }
+
+.wa-reiniciar {
+  appearance: none; border: 1px solid var(--rule); background: none;
+  font: inherit; color: var(--mid); font-size: 0.8125rem; font-weight: 600;
+  padding: 0.375rem 0.75rem; border-radius: 999px; cursor: pointer;
+  transition: transform 110ms cubic-bezier(0.32,0.72,0,1), color 160ms ease;
+}
+.wa-reiniciar:active { transform: scale(0.96); }
+.wa-reiniciar:hover { color: var(--ink); }
+
+.wa-hilo {
+  background: var(--sunken);
+  padding: 1.25rem;
+  height: 30rem;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 0.625rem;
+  scroll-behavior: smooth;
+}
+
+.wa-turno { display: flex; flex-direction: column; gap: 0.625rem; }
+
+.wa-burbuja {
+  max-width: 85%;
+  padding: 0.75rem 0.9375rem;
+  border-radius: 1.125rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  box-shadow: var(--shadow-sm);
+  align-self: flex-start;
+  background: var(--surface);
+  border-bottom-left-radius: 0.375rem;
+}
+.wa-burbuja p { max-width: none; }
+.wa-hueco { height: 0.5rem; }
+
+.wa-burbuja-yo {
+  align-self: flex-end;
+  background: var(--ink);
+  color: var(--paper);
+  border-bottom-left-radius: 1.125rem;
+  border-bottom-right-radius: 0.375rem;
+}
+
+/* Botones de respuesta rápida, como los de WhatsApp: apilados y a todo ancho. */
+.wa-botones { display: flex; flex-direction: column; gap: 0.375rem; }
+.wa-boton {
+  appearance: none; font: inherit; color: var(--signal-ink);
+  background: var(--surface); border: 1px solid var(--rule);
+  border-radius: 0.75rem; padding: 0.75rem 1rem;
+  font-weight: 620; cursor: pointer; text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: transform 110ms cubic-bezier(0.32,0.72,0,1), background-color 160ms ease;
+}
+.wa-boton:active { transform: scale(0.982); }
+.wa-boton:hover { background: var(--signal-soft); }
+
+/* Lista desplegable de WhatsApp: filas con título y descripción. */
+.wa-lista {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 0.875rem;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.wa-fila {
+  appearance: none; font: inherit; color: inherit;
+  background: none; border: 0;
+  border-bottom: 1px solid var(--rule);
+  width: 100%; text-align: left; cursor: pointer;
+  padding: 0.8125rem 1rem;
+  display: flex; flex-direction: column; gap: 0.125rem;
+  transition: background-color 160ms ease;
+}
+.wa-fila:last-child { border-bottom: 0; }
+.wa-fila:hover { background: var(--signal-soft); }
+.wa-fila:active { background: var(--sunken); }
+.wa-fila-titulo { font-weight: 620; letter-spacing: -0.006em; }
+.wa-fila-detalle { font-size: 0.8125rem; color: var(--faint); }
+
+.wa-respuesta { max-width: 92%; display: flex; flex-direction: column; gap: 0.375rem; }
+.wa-respuesta-titulo { font-weight: 680; letter-spacing: -0.008em; }
+.wa-respuesta-pie {
+  color: var(--mid); font-size: 0.875rem;
+  border-left: 2px solid var(--signal); padding-left: 0.75rem; margin-top: 0.25rem;
+}
+.wa-respuesta-fuente { color: var(--faint); font-size: 0.75rem; }
+
+/* ============================================================================
+   Roadmap
+   ========================================================================= */
+
+.hito { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; height: 100%; }
+.hito-estado {
+  align-self: flex-start;
+  font-size: 0.6875rem; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.25rem 0.625rem; border-radius: 999px;
+}
+.hito-ok { background: var(--ok-soft); color: var(--ok); }
+.hito-wip { background: var(--signal-soft); color: var(--signal-ink); }
+.hito-detalle { color: var(--mid); font-size: 0.9375rem; }
+
+/* ============================================================================
+   Ajustes de estructura y jerarquía
+   ========================================================================= */
+
+/* Variante con el teléfono a la izquierda. El orden se invierte solo en
+   escritorio: en móvil el chat va siempre debajo del texto que lo explica. */
+@media (min-width: 60rem) {
+  .dos-columnas-invertida { grid-template-columns: 25rem 1fr; }
+  .dos-columnas-invertida .columna-chat { order: -1; }
+}
+
+.columna-texto { gap: 1.75rem; }
+
+/* Pasos numerados: el número ordena la lectura y el ojo sabe por dónde entrar.
+   Antes eran viñetas sueltas y no se leía como un recorrido. */
+.pasos-numerados {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 1.25rem;
+  counter-reset: paso-n;
+}
+.pasos-numerados li {
+  display: flex; flex-direction: column; gap: 0.25rem;
+  padding-left: 2.5rem; position: relative; max-width: 34em;
+}
+.pasos-numerados li::before {
+  counter-increment: paso-n;
+  content: counter(paso-n);
+  position: absolute; left: 0; top: 0.0625rem;
+  width: 1.625rem; height: 1.625rem;
+  border-radius: 999px;
+  background: var(--signal-soft);
+  color: var(--signal-ink);
+  font-size: 0.8125rem; font-weight: 700;
+  display: grid; place-items: center;
+  font-variant-numeric: tabular-nums;
+}
+.pasos-numerados strong { font-size: 1.0625rem; font-weight: 650; letter-spacing: -0.008em; }
+.pasos-numerados span { color: var(--mid); font-size: 0.9375rem; }
+
+/* Invitación a tocar: va en el color del acento porque es la única acción de
+   la sección, y tiene que distinguirse del texto explicativo. */
+.invitacion {
+  font-weight: 620;
+  color: var(--signal-ink);
+  background: var(--signal-soft);
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.9375rem;
+  max-width: none;
+}
+
+.garantias {
+  display: flex; flex-direction: column; gap: 0.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+.garantias p { color: var(--mid); font-size: 0.9375rem; max-width: 34em; }
+.garantias strong { color: var(--ink); }
+
+.capacidad { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; height: 100%; }
+.capacidad-detalle { color: var(--mid); font-size: 0.9375rem; }
+
+/* Indicador de «escribiendo…»: tres puntos con el mismo pulso desfasado. */
+.burbuja-escribiendo {
+  display: flex; gap: 0.25rem; align-items: center;
+  padding: 0.875rem 1rem;
+  width: fit-content;
+}
+.punto {
+  width: 0.4375rem; height: 0.4375rem;
+  border-radius: 999px;
+  background: var(--faint);
+  animation: pulso 1.2s ease-in-out infinite;
+}
+.punto:nth-child(2) { animation-delay: 0.15s; }
+.punto:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes pulso {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-0.1875rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .punto { animation: none; opacity: 0.6; }
+}
+
+/* ============================================================================
+   El problema · la alerta genérica
+   ----------------------------------------------------------------------------
+   Se dibuja como la notificación que todos hemos visto en la pantalla de
+   bloqueo, no como una caja de texto. Reconocerla es instantáneo, y el punto
+   de la sección es justamente que esa notificación ya la recibiste alguna vez
+   y no te dijo nada útil.
+   ========================================================================= */
+
+.broadcast {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 1.25rem;
+  padding: clamp(1.75rem, 4vw, 2.75rem);
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  border-radius: 1.75rem;
+}
+
+.notificacion {
+  width: min(34rem, 100%);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 1.125rem;
+  padding: 0.875rem 1rem;
+  display: flex; flex-direction: column; gap: 0.5rem;
+  box-shadow: var(--shadow-lg);
+}
+.notificacion-cabeza { display: flex; align-items: center; gap: 0.5rem; }
+.notificacion-icono {
+  width: 1.25rem; height: 1.25rem; border-radius: 0.375rem;
+  background: var(--signal); color: #fff;
+  display: grid; place-items: center;
+  font-size: 0.8125rem; font-weight: 800; line-height: 1;
+}
+.notificacion-app {
+  font-size: 0.75rem; font-weight: 650;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--mid); margin-right: auto;
+}
+.notificacion-hora { font-size: 0.75rem; color: var(--faint); }
+.notificacion-titulo {
+  font-size: clamp(1rem, 2vw, 1.1875rem);
+  font-weight: 640; letter-spacing: -0.012em; max-width: none;
+}
+
+/* Las siete ciudades recibiendo lo mismo. La repetición ES el argumento. */
+.broadcast-destinos {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;
+  position: relative; padding-top: 1.5rem;
+}
+.broadcast-destinos::before {
+  content: ""; position: absolute; top: 0; left: 50%;
+  width: 1px; height: 1.125rem;
+  background: linear-gradient(var(--rule-strong), transparent);
+}
+.destino {
+  font-size: 0.8125rem; font-weight: 600;
+  color: var(--faint);
+  background: var(--sunken);
+  border: 1px solid var(--rule);
+  padding: 0.3125rem 0.6875rem; border-radius: 999px;
+}
+.broadcast-nota { color: var(--mid); text-align: center; max-width: 40em; }
+
+/* Medidor de intensidad: la diferencia entre ciudades, visible sin leer. */
+.medidor {
+  height: 0.375rem; border-radius: 999px;
+  background: var(--sunken); overflow: hidden;
+}
+.medidor-relleno {
+  display: block; height: 100%; width: 100%;
+  transform-origin: left center;
+  background: var(--signal); border-radius: 999px;
+}
+.medidor-mudo { background: var(--rule-strong); }
+
+/* ============================================================================
+   Cómo funciona · el circuito
+   ========================================================================= */
+
+.circuitos { display: grid; gap: clamp(1.25rem, 3vw, 2rem); }
+@media (min-width: 54rem) { .circuitos { grid-template-columns: 1fr 1fr; } }
+
+.circuito {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 1.5rem;
+  padding: clamp(1.5rem, 3vw, 2rem);
+  display: flex; flex-direction: column; gap: 0.5rem;
+  box-shadow: var(--shadow-sm);
+}
+.circuito-titulo { margin-bottom: 1.25rem; }
+
+.circuito-pasos {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 1.5rem;
+  position: relative;
+}
+/* La línea del circuito: se traza al entrar en pantalla. */
+.circuito-linea {
+  position: absolute;
+  left: 0.3125rem; top: 0.5rem; bottom: 0.5rem;
+  width: 2px;
+  background: linear-gradient(var(--signal), var(--rule));
+  transform-origin: top center;
+  border-radius: 999px;
+}
+.circuito-pasos li {
+  display: flex; flex-direction: column; gap: 0.125rem;
+  padding-left: 1.75rem; position: relative;
+}
+.circuito-nodo {
+  position: absolute; left: 0; top: 0.4375rem;
+  width: 0.75rem; height: 0.75rem; border-radius: 999px;
+  background: var(--surface);
+  border: 2px solid var(--signal);
+  box-shadow: 0 0 0 4px var(--surface);
+}
+.circuito-paso-t { font-weight: 640; letter-spacing: -0.008em; }
+.circuito-paso-d { color: var(--mid); font-size: 0.9375rem; }
+
+/* Fuentes como chips con pulso: «conectada» es un estado vivo. */
+.fuentes-fila { display: flex; flex-direction: column; gap: 0.875rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.625rem; }
+.chip {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 0.5rem 0.9375rem 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+.chip-pulso {
+  width: 0.5rem; height: 0.5rem; border-radius: 999px;
+  background: var(--ok); flex: none;
+  animation: latido 2.4s ease-in-out infinite;
+}
+.chip-nombre { font-weight: 640; }
+.chip-uso { color: var(--faint); }
+
+@keyframes latido {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 45%, transparent); }
+  50% { opacity: 0.75; box-shadow: 0 0 0 5px transparent; }
+}
+@media (prefers-reduced-motion: reduce) { .chip-pulso { animation: none; } }
+
+/* ============================================================================
+   Qué hace · bento
+   ----------------------------------------------------------------------------
+   Tarjetas de distinto tamaño porque las cuatro no valen lo mismo: la primera
+   es el diferencial del producto y ocupa el doble.
+   ========================================================================= */
+
+.bento { display: grid; gap: clamp(1rem, 2.5vw, 1.25rem); grid-template-columns: 1fr; }
+@media (min-width: 54rem) {
+  .bento { grid-template-columns: repeat(3, 1fr); }
+  .bento-principal { grid-column: span 3; }
+}
+/* Tres columnas y no cuatro: debajo de la tarjeta grande hay exactamente tres
+   tarjetas, y una cuarta columna vacía dejaba un hueco a la derecha que se
+   leía como un error de maquetación. */
+
+.capacidad {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  display: flex; flex-direction: column; gap: 0.5rem;
+  height: 100%;
+  box-shadow: var(--shadow-sm);
+}
+.capacidad-detalle { color: var(--mid); font-size: 0.9375rem; }
+
+.capacidad-grande {
+  padding: clamp(1.75rem, 4vw, 2.5rem);
+  gap: 1.5rem;
+  background:
+    radial-gradient(120% 140% at 0% 0%, var(--signal-soft) 0%, transparent 55%),
+    var(--surface);
+}
+.capacidad-texto { display: flex; flex-direction: column; gap: 0.625rem; max-width: 34em; }
+.capacidad-titulo-grande {
+  font-size: clamp(1.5rem, 3.2vw, 2.25rem);
+  line-height: 1.1; letter-spacing: -0.02em; font-weight: 700;
+}
+.onda { width: 100%; height: clamp(3.5rem, 8vw, 4.5rem); display: block; }
+.capacidad-leyenda { color: var(--faint); font-size: 0.875rem; max-width: 40em; }
+
+/* ============================================================================
+   Números
+   ========================================================================= */
+
+.cifras { display: grid; gap: clamp(1rem, 2.5vw, 1.25rem); grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
+
+.cifra {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 1.25rem;
+  padding: 1.75rem 1.5rem 1.5rem;
+  display: flex; flex-direction: column; gap: 0.25rem;
+  height: 100%;
+  position: relative; overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+/* Regla superior que crece: da entrada a la tarjeta y marca el acento. */
+.cifra-regla {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; background: var(--signal);
+  transform-origin: left center;
+}
+.cifra-valor {
+  font-size: clamp(2.75rem, 6vw, 4rem);
+  font-weight: 700; letter-spacing: -0.03em; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.cifra-unidad { font-weight: 650; letter-spacing: -0.008em; }
+.cifra-nota { color: var(--mid); font-size: 0.9375rem; margin-top: 0.25rem; }
+
+/* Glifos de las capacidades: el mecanismo de cada tarjeta, dibujado. */
+.glifo {
+  width: 4rem; height: 2.5rem;
+  display: block;
+  margin-bottom: 0.5rem;
+  overflow: visible;
+}
+
+/* ============================================================================
+   Mapa de Colombia
+   ----------------------------------------------------------------------------
+   Dos codificaciones sobre el mismo punto: el tamaño dice cuántos acopios hay
+   y el color cuánto se sintió el sismo. Un punto grande y naranja es una
+   ciudad golpeada que ya recibe ayuda; uno pequeño y gris, una que ayuda sin
+   haberlo sentido.
+   ========================================================================= */
+
+.mapa { position: relative; width: 100%; }
+
+.mapa-svg {
+  width: 100%;
+  height: auto;
+  max-height: min(62svh, 34rem);
+  display: block;
+  overflow: visible;
+}
+
+/* Los departamentos dan estructura sin competir: relleno casi nulo y una
+   línea fina. Si pesaran más, los puntos dejarían de leerse. */
+.mapa-departamentos path {
+  fill: color-mix(in srgb, var(--signal) 6%, transparent);
+  stroke: var(--rule-strong);
+  stroke-width: 0.7;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.mapa-contorno path {
+  fill: none;
+  stroke: var(--signal);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 0.85;
+  vector-effect: non-scaling-stroke;
+}
+
+.mapa-epicentro circle { fill: var(--signal); }
+.mapa-epicentro line {
+  stroke: var(--signal);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Puntos */
+.mapa-golpe { fill: transparent; }
+.mapa-halo { fill: var(--signal); opacity: 0; transition: opacity 180ms ease; }
+.mapa-nucleo { fill: var(--signal); }
+.mapa-punto-mudo .mapa-nucleo { fill: var(--rule-strong); }
+.mapa-punto-mudo .mapa-halo { fill: var(--rule-strong); }
+.mapa-punto-activo .mapa-halo { opacity: 0.22; }
+.mapa-punto { cursor: pointer; transition: transform 160ms cubic-bezier(0.32, 0.72, 0, 1); }
+.mapa-punto-activo { transform: scale(1.18); }
+
+/* Botones invisibles para teclado: el SVG queda limpio y el mapa se recorre
+   con el tabulador como cualquier otra cosa de la página. */
+.mapa-focos { position: absolute; inset: 0; pointer-events: none; }
+.mapa-foco {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border: 0; background: none; padding: 0;
+  border-radius: 999px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.mapa-foco:focus-visible { outline: 2px solid var(--signal); outline-offset: 0; }
+
+/* Globo y ficha */
+.globo {
+  position: absolute;
+  z-index: 5;
+  width: 17rem;
+  pointer-events: none;
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--rule);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-lg);
+  padding: 0.875rem 1rem;
+}
+
+.ficha { display: flex; flex-direction: column; gap: 0.625rem; }
+.ficha-cabeza { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+.ficha-ciudad { font-size: 1.0625rem; font-weight: 680; letter-spacing: -0.012em; }
+.ficha-depto { font-size: 0.8125rem; color: var(--faint); }
+
+.ficha-estado {
+  font-size: 0.8125rem;
+  color: var(--signal-ink);
+  background: var(--signal-soft);
+  padding: 0.375rem 0.625rem;
+  border-radius: 0.5rem;
+  max-width: none;
+}
+.ficha-estado-mudo { color: var(--mid); background: var(--sunken); }
+
+.ficha-ayuda { display: flex; flex-direction: column; gap: 0.1875rem; }
+.ficha-titulo {
+  font-size: 0.6875rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--faint);
+}
+.ficha-acopio { font-size: 0.875rem; font-weight: 620; max-width: none; }
+.ficha-dir { font-size: 0.8125rem; color: var(--mid); max-width: none; }
+.ficha-urgente { font-size: 0.8125rem; color: var(--signal-ink); max-width: none; }
+
+/* Panel de móvil: la información siempre en el mismo sitio, sin tapar el mapa
+   ni obligar a acertarle a un globo pequeño con el dedo. */
+.mapa-panel {
+  margin-top: 1rem;
+  min-height: 8.5rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 1rem;
+  padding: 1rem;
+}
+.mapa-pista { color: var(--faint); font-size: 0.875rem; }
+
+@media (min-width: 62rem) {
+  .mapa-panel { display: none; }
+}
+@media (max-width: 61.99rem) {
+  .globo { display: none; }
+}
+
+.mapa-leyenda {
+  display: flex; flex-wrap: wrap; gap: 0.5rem 1rem;
+  margin-top: 0.875rem;
+  font-size: 0.75rem; color: var(--faint);
+}
+.mapa-leyenda span { display: inline-flex; align-items: center; gap: 0.375rem; }
+.leyenda-punto { width: 0.5rem; height: 0.5rem; border-radius: 999px; background: var(--signal); }
+.leyenda-punto-mudo { background: var(--rule-strong); }
+.leyenda-cruz {
+  width: 0.625rem; height: 0.625rem;
+  background:
+    linear-gradient(var(--signal), var(--signal)) center/100% 2px no-repeat,
+    linear-gradient(var(--signal), var(--signal)) center/2px 100% no-repeat;
+}
+.leyenda-nota { color: var(--rule-strong); }
+
+@media (prefers-reduced-motion: reduce) {
+  .mapa-punto { transition: none; }
+}
+
+/* Las direcciones de los acopios vienen larguísimas («a la altura del Hotel
+   Tángara, vía pavimentada…»). Se recortan a dos líneas: en el globo hace
+   falta reconocer el sitio, no llegar conduciendo. */
+.ficha-dir {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.globo .ficha-urgente {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* En móvil el hero era un muro de texto y el mapa arrancaba fuera de pantalla:
+   nadie lo veía sin bajar a ciegas. Se aprieta el aire y se recorta el alto del
+   mapa para que asome desde el primer momento y se entienda que hay algo ahí. */
+@media (max-width: 61.99rem) {
+  .hero { padding-top: 5.5rem; min-height: 0; }
+  .hero-rejilla { gap: 1.75rem; }
+  .hero-texto { gap: 1.125rem; }
+  .hero-nota { font-size: 1rem; }
+  .mapa-svg { max-height: 46svh; }
+  .mapa-panel { min-height: 7rem; }
+}
+
+/* La máscara del titular: cada línea sube desde detrás de su propio recorte.
+   El `padding-bottom` negativo compensa lo que las colas de las letras (p, g,
+   j) necesitan por debajo de la línea base, que si no quedan cortadas. */
+.mascara-linea {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.linea-titular { display: block; }
