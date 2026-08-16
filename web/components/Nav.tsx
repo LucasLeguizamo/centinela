@@ -32,6 +32,7 @@ export function Nav() {
           <a href="#demo">Cómo se usa</a>
           <a href="#ayuda">Después del sismo</a>
           <a href="#como">Cómo funciona</a>
+          <a href="#mundo">El histórico</a>
         </div>
 
         <a className="boton boton-primario nav-cta" href={WHATSAPP} target="_blank" rel="noreferrer">

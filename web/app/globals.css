@@ -1247,3 +1247,114 @@ a { color: inherit; }
   margin-bottom: -0.08em;
 }
 .linea-titular { display: block; }
+
+/* ------------------------------------------------------------------ mundo
+   El catálogo mundial. Casi todo reusa `.cifra` y `.encabezado`; lo propio
+   son dos cosas: el contraste entre el sismo más grande y el más grave, y
+   las listas de eventos, que son tablas sin ser <table> — con cuatro
+   columnas de anchos muy distintos, la grilla se comporta mejor y en móvil
+   se apila sin pelear.                                                     */
+
+.cifras-mundo { margin-bottom: clamp(3rem, 7vh, 5rem); }
+
+.contraste {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+.contraste-carta {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 1.25rem;
+  padding: clamp(1.5rem, 3vw, 2rem);
+  box-shadow: var(--shadow-sm);
+  display: flex; flex-direction: column; gap: 0.375rem;
+}
+
+.contraste-mag {
+  font-size: clamp(2.5rem, 5.5vw, 3.5rem);
+  font-weight: 700; letter-spacing: -0.03em; line-height: 1;
+  font-variant-numeric: tabular-nums;
+  margin-top: 0.5rem;
+}
+.contraste-lugar { font-weight: 650; letter-spacing: -0.008em; }
+.contraste-cuando { color: var(--mid); }
+
+.contraste-datos {
+  margin-top: 1rem; padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.contraste-datos > div { display: flex; justify-content: space-between; gap: 1rem; }
+.contraste-datos dt { color: var(--mid); font-size: 0.9375rem; }
+.contraste-datos dd { font-weight: 650; font-variant-numeric: tabular-nums; }
+.contraste-rojo { color: var(--signal); }
+
+.contraste-tesis {
+  margin-top: 1rem;
+  color: var(--mid);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+/* La palabra vertical entre las dos cartas. Es tipografía, no un adorno:
+   sostiene la comparación sin robarle peso a ninguno de los dos lados. */
+.contraste-vs {
+  display: flex; align-items: center; justify-content: center;
+}
+.contraste-vs span {
+  writing-mode: vertical-rl;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  color: var(--faint);
+}
+
+.sismos {
+  list-style: none; margin: 0; padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 1.25rem;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.sismo {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto 12rem;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.875rem clamp(1rem, 2.5vw, 1.5rem);
+  border-top: 1px solid var(--rule);
+}
+.sismo:first-child { border-top: 0; }
+
+.sismo-mag { font-weight: 700; color: var(--signal); font-variant-numeric: tabular-nums; }
+.sismo-lugar { font-weight: 550; }
+.sismo-cuando { color: var(--faint); white-space: nowrap; }
+.sismo-alerta { font-size: 0.875rem; color: var(--mid); text-align: right; }
+.sismo-alerta-nada { color: var(--faint); }
+.sismo-alerta-yellow,
+.sismo-alerta-orange { color: var(--signal-ink); }
+.sismo-alerta-red { color: var(--signal); font-weight: 650; }
+
+.sismos-pie {
+  margin-top: 1.25rem;
+  color: var(--mid);
+  font-size: 0.9375rem;
+}
+
+@media (max-width: 46rem) {
+  .contraste { grid-template-columns: 1fr; }
+  .contraste-vs span { writing-mode: horizontal-tb; }
+
+  /* En móvil la fila deja de ser tabla: magnitud y lugar arriba, el resto
+     debajo. Cuatro columnas en 390px no se leen ni con lupa. */
+  .sismo {
+    grid-template-columns: 4.5rem 1fr;
+    gap: 0.25rem 0.75rem;
+  }
+  .sismo-cuando { grid-column: 2; }
+  .sismo-alerta { grid-column: 2; text-align: left; }
+}

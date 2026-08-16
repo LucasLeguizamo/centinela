@@ -19,6 +19,7 @@ import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PUNTOS, TOTAL_ACOPIOS, TOTAL_MUNICIPIOS } from "../lib/puntos.ts";
+import { CONTEOS, MAS_GRANDE, MAS_SIGNIFICATIVO, SEIS_MAS } from "../lib/mundo.ts";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const URL = process.env.URL ?? "http://localhost:3210/";
@@ -80,7 +81,7 @@ const invisibles = await pagina.evaluate(() =>
 revisar("todas las secciones se revelaron", invisibles === 0, `${invisibles} bloques invisibles`);
 
 // Las ocho secciones del argumento. Si falta una, el orden del relato se rompió.
-for (const id of ["problema", "demo", "ayuda", "como", "que-hace", "numeros", "pruebalo"]) {
+for (const id of ["problema", "demo", "ayuda", "como", "que-hace", "mundo", "numeros", "pruebalo"]) {
   revisar(`sección #${id}`, await pagina.locator(`#${id}`).count() > 0);
 }
 
@@ -96,6 +97,22 @@ revisar(
   cuerpo.includes(String(TOTAL_ACOPIOS)) && cuerpo.includes(String(TOTAL_MUNICIPIOS))
 );
 revisar("el mapa pintó los municipios", await pagina.locator(".mapa-punto, [class*='punto']").count() >= PUNTOS.length / 2);
+
+// El catálogo mundial es la sección más fácil de dejar desactualizada: se
+// genera y se congela. Si la página no muestra los mismos eventos que el
+// último `pnpm mundo`, alguien editó a mano o se olvidó de regenerar.
+revisar(
+  `el catálogo dice ${CONTEOS[0].toLocaleString("es-CO")} sismos`,
+  cuerpo.includes(CONTEOS[0].toLocaleString("es-CO"))
+);
+revisar(
+  `lista los ${SEIS_MAS.length} sismos de M6+`,
+  await pagina.locator("#mundo .sismos").first().locator(".sismo").count() === SEIS_MAS.length
+);
+revisar(
+  "el contraste enfrenta dos sismos distintos",
+  MAS_GRANDE.id !== MAS_SIGNIFICATIVO.id && cuerpo.includes(MAS_SIGNIFICATIVO.lugar)
+);
 
 // Español colombiano: el voseo se coló una vez, no se cuela dos.
 const voseo = cuerpo.match(/\b(vos|tenés|querés|necesitás|recibís|elegís|escribís|decís|vivís|probalo|tuyo)\b/i);

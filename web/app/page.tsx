@@ -3,6 +3,7 @@ import { Hero } from "@/components/Hero";
 import { Problema } from "@/components/Problema";
 import { Conversacion } from "@/components/Conversacion";
 import { Ayuda } from "@/components/Ayuda";
+import { Mundo } from "@/components/Mundo";
 import { Capacidades, ComoFunciona, Numeros, Pruebalo } from "@/components/Cierre";
 
 /**
@@ -27,6 +28,10 @@ export default function Page() {
         <Ayuda />
         <ComoFunciona />
         <Capacidades />
+        {/* La evidencia va acá y no antes: primero se entiende qué hace el
+            producto, y recién después el catálogo del planeta demuestra que el
+            problema que resuelve es real. Al revés serían datos sin destino. */}
+        <Mundo />
         <Numeros />
         <Pruebalo />
       </main>
