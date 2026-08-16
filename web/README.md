@@ -60,6 +60,7 @@ El texto es en **español colombiano**: nada de voseo. `pnpm humo` lo revisa.
 | `components/Ayuda.tsx` | El WhatsApp interactivo. Se puede clicar de verdad. |
 | `components/Cierre.tsx` | Cómo funciona, capacidades, números y el QR. |
 | `components/Glifos.tsx` | Los tres glifos animados de las capacidades. |
+| `components/Mundo.tsx` | El catálogo mundial. Vive en `/historico`, no en la portada: la portada tiene un solo trabajo, que es llevar a alguien hasta el WhatsApp. |
 
 ## Los archivos generados — no editar a mano
 

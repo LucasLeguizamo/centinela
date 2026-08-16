@@ -81,7 +81,7 @@ const invisibles = await pagina.evaluate(() =>
 revisar("todas las secciones se revelaron", invisibles === 0, `${invisibles} bloques invisibles`);
 
 // Las ocho secciones del argumento. Si falta una, el orden del relato se rompió.
-for (const id of ["problema", "demo", "ayuda", "como", "que-hace", "mundo", "numeros", "pruebalo"]) {
+for (const id of ["problema", "demo", "ayuda", "como", "que-hace", "numeros", "pruebalo"]) {
   revisar(`sección #${id}`, await pagina.locator(`#${id}`).count() > 0);
 }
 
@@ -97,22 +97,6 @@ revisar(
   cuerpo.includes(String(TOTAL_ACOPIOS)) && cuerpo.includes(String(TOTAL_MUNICIPIOS))
 );
 revisar("el mapa pintó los municipios", await pagina.locator(".mapa-punto, [class*='punto']").count() >= PUNTOS.length / 2);
-
-// El catálogo mundial es la sección más fácil de dejar desactualizada: se
-// genera y se congela. Si la página no muestra los mismos eventos que el
-// último `pnpm mundo`, alguien editó a mano o se olvidó de regenerar.
-revisar(
-  `el catálogo dice ${CONTEOS[0].toLocaleString("es-CO")} sismos`,
-  cuerpo.includes(CONTEOS[0].toLocaleString("es-CO"))
-);
-revisar(
-  `lista los ${SEIS_MAS.length} sismos de M6+`,
-  await pagina.locator("#mundo .sismos").first().locator(".sismo").count() === SEIS_MAS.length
-);
-revisar(
-  "el contraste enfrenta dos sismos distintos",
-  MAS_GRANDE.id !== MAS_SIGNIFICATIVO.id && cuerpo.includes(MAS_SIGNIFICATIVO.lugar)
-);
 
 // Español colombiano: el voseo se coló una vez, no se cuela dos.
 const voseo = cuerpo.match(/\b(vos|tenés|querés|necesitás|recibís|elegís|escribís|decís|vivís|probalo|tuyo)\b/i);
@@ -134,6 +118,50 @@ await pagina.locator(".wa-reiniciar").click();
 revisar("reiniciar deja el chat en el saludo", (await pagina.locator(".wa-hilo").innerText()).includes("Soy Centinela"));
 
 await pagina.screenshot({ path: join(CAPTURAS, "escritorio.png"), fullPage: true });
+
+
+/* ------------------------------------------------------------------ histórico */
+
+console.log("\nHistórico · /historico");
+const historico = await escritorio.newPage();
+historico.on("console", (m) => m.type() === "error" && errores.push(m.text()));
+historico.on("pageerror", (e) => errores.push(String(e)));
+
+const rHistorico = await historico.goto(URL.replace(/\/$/, "") + "/historico", { waitUntil: "networkidle" });
+revisar("responde 200", rHistorico?.status() === 200, `status ${rHistorico?.status()}`);
+await recorrer(historico);
+
+// El catálogo es lo más fácil de dejar desactualizado: se genera y se congela.
+// Si la página no muestra los mismos eventos que el último `pnpm mundo`,
+// alguien editó a mano o se olvidó de regenerar.
+const textoHistorico = await historico.locator("body").innerText();
+revisar(
+  `dice ${CONTEOS[0].toLocaleString("es-CO")} sismos`,
+  textoHistorico.includes(CONTEOS[0].toLocaleString("es-CO"))
+);
+revisar(
+  `lista los ${SEIS_MAS.length} sismos de M6+`,
+  await historico.locator("#mundo .sismos").first().locator(".sismo").count() === SEIS_MAS.length
+);
+revisar(
+  "el contraste enfrenta dos sismos distintos",
+  MAS_GRANDE.id !== MAS_SIGNIFICATIVO.id && textoHistorico.includes(MAS_SIGNIFICATIVO.lugar)
+);
+// Los lugares vienen en inglés del USGS y se traducen al generar. Si aparece
+// un « of » suelto, alguien agregó un formato que el traductor no cubre.
+revisar("los lugares están en español", !/\d+ km [NSEW]{1,3} of /.test(textoHistorico));
+
+// El nav cruza rutas: desde acá los anclajes de la portada tienen que llevar
+// a la portada, no a secciones que en esta página no existen.
+revisar(
+  "el nav vuelve a la portada",
+  await historico.locator('.nav-enlaces a[href="/#problema"]').count() === 1
+);
+
+// La landing dejó de contarlo: si vuelve a aparecer ahí, se duplicó.
+revisar("el histórico no está en la portada", await pagina.locator("#mundo").count() === 0);
+
+await historico.screenshot({ path: join(CAPTURAS, "historico.png"), fullPage: true });
 
 /* ---------------------------------------------------------------------- móvil */
 
