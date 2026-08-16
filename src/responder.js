@@ -530,11 +530,17 @@ export async function componerRespuesta(intencion, lugar, texto = "") {
 /**
  * Intenciones que atiende el workflow de Kapso, no este proceso.
  *
- * El reparto es: el workflow abre puertas (menús, botones, la ciudad) porque
- * corre en el momento; el responder contesta con datos porque puede consultar
- * la base. Que los dos contesten lo mismo es peor que si no contestara ninguno.
+ * El reparto es: el workflow abre puertas (la puerta inicial, la ciudad, el
+ * menú general) porque corre en el momento; el responder contesta todo lo
+ * demás, porque puede consultar la base.
+ *
+ * Ojo con mover cosas de un lado al otro: "Necesito ayuda" y "Quiero ayudar"
+ * —los botones que van pegados a cada alerta— estuvieron un rato acá, y como
+ * el workflow también los daba por ajenos, nadie contestaba. Que los dos
+ * hablen es molesto; que los dos se callen es una persona sin respuesta
+ * después de un sismo.
  */
-const DEL_WORKFLOW = ["ayuda", "menu_ayudar", "menu_necesito"];
+const DEL_WORKFLOW = ["ayuda"];
 
 /**
  * Los botones que manda el workflow, por su título exacto.
@@ -550,6 +556,19 @@ const BOTONES_WORKFLOW = [
   "ver el menu",
   "darme de baja",
 ];
+
+/**
+ * ¿Quién le contesta a este mensaje: el workflow de Kapso o este proceso?
+ *
+ * Existe para poder probar el reparto. El agujero que dejó a alguien sin
+ * respuesta después de una alerta fue justo éste: los dos lados creían que
+ * contestaba el otro, y en WhatsApp eso se ve como un bot muerto.
+ */
+export function quienContesta(texto) {
+  if (BOTONES_WORKFLOW.includes(sinAcentos(texto).trim())) return "workflow";
+  if (normalizarMunicipio(texto)) return "workflow";
+  return DEL_WORKFLOW.includes(clasificarIntencion(texto)) ? "workflow" : "responder";
+}
 
 export async function atenderPreguntas({ seco = false } = {}) {
   const suscriptores = await leerSuscriptores();

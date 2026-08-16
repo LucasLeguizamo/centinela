@@ -50,7 +50,9 @@ workflow.addNode("decidir_entrada", {
         "Tocó una fila del menú: 'Llevar cosas', 'Donar dinero', 'Donar sangre', " +
         "'Ser voluntario', 'Ofrecer alojamiento', 'Buscar a alguien', 'Perdí mi mascota', " +
         "'Necesito dónde dormir', 'Necesito ayuda económica' o 'Reportar daños'. " +
-        "También si pregunta por un sismo: qué tan fuerte fue, réplicas, cambiar de ciudad.",
+        "También los botones que van pegados a una alerta —'Necesito ayuda' y " +
+        "'Quiero ayudar'—, y las preguntas sobre un sismo: qué tan fuerte fue, " +
+        "réplicas, cambiar de ciudad.",
     },
     {
       label: "menu",

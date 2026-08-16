@@ -1,7 +1,7 @@
 // Autochequeo del clasificador de intenciones: node src/responder.test.js
 
 import assert from "node:assert/strict";
-import { clasificarIntencion, componerRespuesta, menuLista, textoDeMensaje, primerEnlace, recortar } from "./responder.js";
+import { clasificarIntencion, componerRespuesta, menuLista, textoDeMensaje, primerEnlace, recortar, quienContesta } from "./responder.js";
 import { MUNICIPIOS } from "./sismos.js";
 
 // Cómo escribe la gente de verdad: sin acentos, sin mayúsculas, con typos.
@@ -249,6 +249,33 @@ for (const titulo of ["Alertas de sismo", "Ayuda y donaciones", "Ver el menú", 
     ["ayuda", "baja", "desconocida", "detalle"].includes(clasificarIntencion(titulo)),
     `"${titulo}" es un botón del workflow: el responder no debería tener respuesta propia`
   );
+}
+
+// Cada botón tiene dueño, y uno solo.
+//
+// Los dos botones de la alerta estuvieron asignados al workflow mientras el
+// workflow los daba por ajenos: nadie contestaba y la persona quedaba sola
+// justo después de un sismo. Esta tabla es el contrato entre los dos procesos.
+const DUENO = [
+  // Los manda el workflow y los contesta el workflow.
+  ["Alertas de sismo", "workflow"],
+  ["Ayuda y donaciones", "workflow"],
+  ["Ver el menú", "workflow"],
+  ["Darme de baja", "workflow"],
+  ["Manizales", "workflow"],
+  ["hola", "workflow"],
+
+  // Los botones de la alerta y las filas del menú: datos, o sea responder.
+  ["Necesito ayuda", "responder"],
+  ["Quiero ayudar", "responder"],
+  ["Llevar cosas", "responder"],
+  ["Buscar a alguien", "responder"],
+  ["Reportar daños", "responder"],
+  ["que tan fuerte fue", "responder"],
+];
+
+for (const [texto, dueno] of DUENO) {
+  assert.equal(quienContesta(texto), dueno, `"${texto}" debería contestarlo el ${dueno}`);
 }
 
 console.log(`✓ responder.js ok — ${CASOS.length} frases clasificadas`);
