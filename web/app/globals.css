@@ -38,6 +38,11 @@
   --ok: #1E6B45;
   --ok-soft: #E3F0E9;
 
+  /* Escala de intensidad sentida, del mapa: diverge de verde a rojo, aparte
+     del acento (que sigue siendo solo naranja, para links y botones). El
+     verde reusa `--ok` — misma idea semántica, "esto está bien/tranquilo". */
+  --intensidad-alta: #C22E1F;
+
   /* Material translúcido de la chrome flotante. */
   --glass: rgba(251, 250, 249, 0.72);
   --glass-edge: rgba(255, 255, 255, 0.75);
@@ -72,6 +77,8 @@
 
     --ok: #6FBE93;
     --ok-soft: #12271C;
+
+    --intensidad-alta: #FF6B52;
 
     --glass: rgba(12, 10, 9, 0.68);
     --glass-edge: rgba(255, 255, 255, 0.09);
@@ -195,6 +202,11 @@ a { color: inherit; }
 .seccion {
   padding-block: var(--seccion);
   padding-inline: var(--gutter);
+  /* Sin esto, cualquier link con `#ancla` (el nuevo CTA del hero incluido)
+     deja la sección justo detrás del nav fijo (`.chrome`, 65px) — el scroll
+     pasa de verdad, pero se ve como si el botón no hiciera nada. 5.5rem es
+     el mismo respiro que ya usa `.ls-col-mapa` para lo mismo. */
+  scroll-margin-top: 5.5rem;
 }
 
 .contenido {
@@ -280,6 +292,16 @@ a { color: inherit; }
   border: 1px solid var(--rule-strong);
 }
 .boton-secundario:hover { background: var(--surface-2); }
+
+/* Un escalón más callado que `.boton-secundario`: sin borde. Para cuando ya
+   hay dos botones con peso en la fila y un tercero no puede competir con
+   ninguno de los dos. */
+.boton-fantasma {
+  background: transparent;
+  color: var(--mid);
+  padding-inline: 1rem;
+}
+.boton-fantasma:hover { color: var(--ink); background: var(--surface-2); }
 
 :where(a, button, [tabindex]):focus-visible {
   outline: 2px solid var(--signal);
@@ -418,14 +440,19 @@ a { color: inherit; }
 .hero-texto { display: flex; flex-direction: column; gap: 1.5rem; }
 
 /* El mapa solo se pone al lado cuando hay ancho de verdad. Antes de eso va
-   debajo del texto, donde se lee sin apretar nada. */
+   debajo del texto, donde se lee sin apretar nada.
+
+   La columna del mapa creció (antes 24rem/27rem): el mapa es la mitad del
+   argumento del hero —dónde golpeó, dónde se ayuda— y competía con el texto
+   en vez de sostenerlo. */
 @media (min-width: 62rem) {
-  .hero-rejilla { grid-template-columns: 1fr 24rem; }
+  .hero-rejilla { grid-template-columns: 1fr 30rem; }
 }
 @media (min-width: 74rem) {
-  .hero-rejilla { grid-template-columns: 1fr 27rem; }
+  .hero-rejilla { grid-template-columns: 0.95fr 34rem; }
 }
 
+.hero-mapa { position: relative; }
 .hero-titulo { max-width: 16ch; }
 .hero-acciones { margin-top: 0.5rem; }
 .hero-nota { color: var(--mid); max-width: 34em; font-size: 1.0625rem; }
@@ -1074,7 +1101,7 @@ a { color: inherit; }
 .mapa-svg {
   width: 100%;
   height: auto;
-  max-height: min(62svh, 34rem);
+  max-height: min(70svh, 40rem);
   display: block;
   overflow: visible;
 }
@@ -1097,6 +1124,11 @@ a { color: inherit; }
   stroke-linecap: round;
   opacity: 0.85;
   vector-effect: non-scaling-stroke;
+  /* Puramente decorativo, siempre — pero un trazo sin relleno igual
+     intercepta el puntero sobre su stroke. En el hero no se nota porque
+     `.mapa-focos` flota por encima de todo; en Línea Sismo, donde los
+     departamentos mismos son el botón, sin esto no llegaba ni un clic. */
+  pointer-events: none;
 }
 
 .mapa-epicentro circle { fill: var(--signal); }
@@ -1107,10 +1139,21 @@ a { color: inherit; }
   vector-effect: non-scaling-stroke;
 }
 
-/* Puntos */
+/* Puntos
+   ----------------------------------------------------------------------------
+   El color de cada punto es una escala real, no decorativa: interpola entre
+   `--intensidad-alta` (rojo, se sintió fuerte) y `--ok` (verde, apenas o nada)
+   según `--fuerza-pct`, el mismo `fuerza` 0–1 que ya traía cada municipio
+   desde `lib/puntos.ts`. No hay número nuevo, solo un color distinto para el
+   que ya existía. */
 .mapa-golpe { fill: transparent; }
 .mapa-halo { fill: var(--signal); opacity: 0; transition: opacity 180ms ease; }
-.mapa-nucleo { fill: var(--signal); }
+.mapa-nucleo {
+  /* `hsl` y no `oklch`: acá sí queremos que el punto medio pase por amarillo
+     —el semáforo que todo el mundo ya lee— y `oklch` lo apagaba a un oliva
+     confuso, ni rojo ni verde. */
+  fill: color-mix(in hsl, var(--intensidad-alta) calc(var(--fuerza-pct, 50) * 1%), var(--ok));
+}
 .mapa-punto-mudo .mapa-nucleo { fill: var(--rule-strong); }
 .mapa-punto-mudo .mapa-halo { fill: var(--rule-strong); }
 .mapa-punto-activo .mapa-halo { opacity: 0.22; }
@@ -1197,6 +1240,8 @@ a { color: inherit; }
 .mapa-leyenda span { display: inline-flex; align-items: center; gap: 0.375rem; }
 .leyenda-punto { width: 0.5rem; height: 0.5rem; border-radius: 999px; background: var(--signal); }
 .leyenda-punto-mudo { background: var(--rule-strong); }
+.leyenda-punto-alta { background: var(--intensidad-alta); }
+.leyenda-punto-baja { background: var(--ok); }
 .leyenda-cruz {
   width: 0.625rem; height: 0.625rem;
   background:
@@ -1247,3 +1292,291 @@ a { color: inherit; }
   margin-bottom: -0.08em;
 }
 .linea-titular { display: block; }
+
+/* ============================================================================
+   Línea Sismo · boceto interactivo
+   ----------------------------------------------------------------------------
+   El marco reutiliza `.tarjeta-grande`; acá solo vive lo que es específico del
+   boceto: la selección de país, el mapa reducido y las tarjetas de ejemplo.
+   Los colores de estado (`.hito-ok` / `.hito-wip`, ya definidos arriba para el
+   roadmap) se reusan tal cual para "encontrado/a" y "buscando".
+   ========================================================================= */
+
+/* Ya no es una card (sin fondo, sin borde, sin sombra): el contenido queda
+   libre sobre el degradé de la sección. `.contenido` ya reparte el
+   espaciado vertical entre hermanos, así que acá no hace falta padding. */
+.ls-marco { }
+
+/* El fondo de toda la sección, no una card adentro de la sección: por eso va
+   en el `<section>`, no en `.ls-marco`. Dos brillos —arriba a la derecha,
+   abajo a la izquierda— en vez de uno solo: así el naranja tiene presencia
+   en toda la sección y no se lee como una esquina decorativa. El color sale
+   de mezclar `--signal` con `--paper` (más saturado que `--signal-soft`,
+   que quedaba pálido) — sigue construido con tokens, así que no hace falta
+   nada aparte para el modo oscuro. Las pestañas, los pines de país y cada
+   tarjeta se quedan en `--surface` para leerse claro encima. */
+.seccion-linea-sismo {
+  --ls-glow: color-mix(in srgb, var(--signal) 42%, var(--paper));
+  background:
+    radial-gradient(120% 75% at 100% 0%, var(--ls-glow) 0%, transparent 62%),
+    radial-gradient(120% 75% at 0% 100%, var(--ls-glow) 0%, transparent 62%),
+    var(--paper);
+}
+
+/* Los departamentos del mapa de Colombia, sin resaltar, normalmente llevan
+   un tinte naranja casi transparente (`.mapa-departamentos path` en la
+   sección del mapa del hero) — sobre este fondo desaparecerían. Acá se
+   fuerza un relleno claro y sólido para que el contorno siga leyéndose. */
+.ls-mapa .mapa-departamentos path { fill: var(--surface); }
+.ls-selector, .ls-panel { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.ls-paises { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.625rem; }
+.ls-pais {
+  appearance: none; font: inherit; cursor: pointer;
+  background: var(--surface); color: var(--mid);
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px; padding: 0.375rem 0.9375rem;
+  font-size: 0.8125rem; font-weight: 640;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.ls-pais-activo { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.ls-pais:not(:disabled):not(.ls-pais-activo):hover { border-color: var(--ink); color: var(--ink); }
+.ls-pais:disabled { opacity: 0.42; cursor: not-allowed; }
+
+.ls-mapa { position: relative; }
+.ls-mapa-svg { max-height: min(68svh, 38rem); }
+.ls-mapa-cabo {
+  text-align: center; margin-top: 0.625rem;
+  font-size: 0.8125rem; color: var(--faint);
+}
+
+.ls-disclaimer { text-align: center; font-size: 0.8125rem; color: var(--faint); margin-top: 0.625rem; }
+
+/* -------------------------------------------------------------- pestañas
+   Réplica directa del mockup: cápsulas blancas, la activa en el tono del
+   acento. Las sub-pestañas de Donaciones son la misma idea, un escalón más
+   chicas — así se lee que dependen de la pestaña de arriba. */
+.ls-tabs { display: flex; flex-wrap: wrap; gap: 0.625rem; }
+.ls-tab {
+  appearance: none; font: inherit; cursor: pointer;
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px; padding: 0.625rem 1.25rem;
+  font-size: 0.9375rem; font-weight: 650;
+  box-shadow: var(--shadow-sm);
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+.ls-tab-activo { background: var(--signal-soft); border-color: var(--signal); color: var(--signal-ink); }
+.ls-tab:not(.ls-tab-activo):hover { border-color: var(--ink); }
+
+.ls-subtabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: -0.625rem; }
+.ls-subtab {
+  appearance: none; font: inherit; cursor: pointer;
+  background: var(--surface); color: var(--mid);
+  border: 1px solid var(--rule); border-radius: 999px;
+  padding: 0.375rem 0.875rem; font-size: 0.8125rem; font-weight: 620;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.ls-subtab-activo { background: var(--signal-soft); border-color: var(--signal); color: var(--signal-ink); }
+.ls-subtab:not(.ls-subtab-activo):hover { border-color: var(--rule-strong); color: var(--ink); }
+
+/* ------------------------------------------------------------ dos columnas
+   Lista a la izquierda, mapa a la derecha — igual que el mockup. En móvil se
+   apila: la lista primero, porque es lo que responde la pregunta. */
+.ls-cols { display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
+@media (min-width: 56rem) {
+  .ls-cols { grid-template-columns: 0.9fr 1.4fr; align-items: start; }
+}
+
+.ls-col-lista { display: flex; flex-direction: column; min-width: 0; }
+.ls-lista-titulo { font-weight: 680; font-size: 1rem; margin: 0 0 0.875rem; display: flex; align-items: center; gap: 0.5rem; }
+
+.ls-lista {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 0.625rem;
+  max-height: 26rem; overflow-y: auto;
+}
+
+.ls-tarjeta {
+  display: flex; gap: 0.75rem; align-items: flex-start; position: relative;
+  padding: 0.875rem 1.5rem 0.875rem 0.875rem; background: var(--surface);
+  border: 1px solid var(--rule); border-radius: 1rem;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+.ls-tarjeta-activa { border-color: var(--signal); background: var(--signal-soft); }
+
+.ls-avatar {
+  width: 2.75rem; height: 2.75rem; flex: none;
+  border-radius: 999px; background: var(--sunken);
+  display: grid; place-items: center;
+}
+.ls-avatar svg { width: 1.25rem; height: 1.25rem; fill: var(--faint); }
+.ls-avatar-lugar { font-size: 1.125rem; }
+
+.ls-tarjeta-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.1875rem; }
+.ls-tarjeta-nombre { font-weight: 660; max-width: none; }
+.ls-tarjeta-meta { color: var(--faint); font-size: 0.8125rem; font-style: italic; }
+.ls-tarjeta-desc { color: var(--mid); font-size: 0.875rem; max-width: none; }
+
+/* La barra: un estado visual, sin texto — el mockup no le puso una etiqueta
+   y no se inventa una acá. Vive mientras la fila está en la lista. */
+.ls-tarjeta-barra {
+  position: absolute; right: 0.625rem; top: 50%; transform: translateY(-50%);
+  width: 0.375rem; height: 2.5rem; border-radius: 999px; background: var(--ok);
+}
+
+/* El botón "reportar encontrado/a" que reemplaza la barrita en la lista de
+   Desaparecidos. Apagado con el mismo criterio que `.ls-cta`: colores
+   sobrios en vez de vivos, para que se lea como "esto existe en el diseño,
+   no en el bot" sin necesitar leer el tooltip para entenderlo. */
+.ls-encontrado {
+  position: absolute; right: 0.625rem; top: 50%; transform: translateY(-50%);
+  width: 1.875rem; height: 1.875rem; flex: none;
+  border-radius: 999px;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--faint);
+  display: grid; place-items: center;
+  cursor: not-allowed;
+}
+.ls-encontrado svg { width: 1rem; height: 1rem; }
+
+.ls-col-mapa { position: sticky; top: 5.5rem; }
+
+/* Los tres estados de un departamento tecleable: normal (clarito, ver
+   `.ls-mapa .mapa-departamentos path` más arriba), pasando el cursor (un
+   escalón hacia el acento, sin llegar al naranja lleno) y seleccionado
+   (`.ls-dpto-activo`, el naranja completo). El selector completo —no solo
+   la clase— es para ganarle en especificidad a `.mapa-departamentos path`
+   sin recurrir a `!important`. */
+.mapa-departamentos path { transition: fill 120ms ease; }
+.mapa-departamentos path.ls-dpto-hover { fill: var(--signal-soft); }
+.mapa-departamentos path.ls-dpto-activo { fill: var(--signal); opacity: 0.85; }
+
+/* Marcadores de ciudad: el punto es solo visual, el foco de alrededor es
+   donde vive todo el toque — ver el comentario en `MapaResaltado`. */
+.ls-ciudad-punto {
+  fill: var(--signal);
+  stroke: var(--surface);
+  stroke-width: 2;
+  pointer-events: none;
+  transition: r 120ms ease;
+}
+.ls-ciudad-punto-activo { fill: var(--signal-ink); }
+
+.ls-ciudad-foco {
+  fill: transparent;
+  cursor: pointer;
+}
+.ls-ciudad-foco:focus-visible {
+  fill: color-mix(in srgb, var(--signal) 18%, transparent);
+  outline: none;
+}
+
+/* El tooltip del nombre de la zona: sigue al cursor por JS (`ColumnaMapa`),
+   acá solo se posiciona y se saca del flujo del documento. */
+.ls-mapa-tooltip {
+  position: absolute;
+  transform: translate(-50%, -135%);
+  background: var(--ink); color: var(--paper);
+  font-size: 0.75rem; font-weight: 650;
+  padding: 0.3125rem 0.6875rem;
+  border-radius: 0.5rem;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 6;
+}
+
+@media (min-width: 40rem) {
+  .ls-paises { margin-top: 0.75rem; }
+}
+
+/* ============================================================================
+   Hero · dato de personas desaparecidas
+   ----------------------------------------------------------------------------
+   Vive sobre el mapa porque es del mapa: la misma cifra real que ya usa el
+   chat de Ayuda (`lib/datos.ts`), no una nueva. El enlace baja a `#ayuda`,
+   donde la tarjeta de verdad — "Buscar a alguien" — ya existe y responde.
+   ========================================================================= */
+
+.hero-dato {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 0.25rem 0.875rem;
+  background: var(--signal-soft);
+  border: 1px solid color-mix(in srgb, var(--signal) 35%, transparent);
+  border-radius: 1rem;
+  padding: 0.875rem 1.125rem;
+  margin-bottom: 0.875rem;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 160ms ease, transform 140ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.hero-dato:hover { border-color: var(--signal); }
+.hero-dato:active { transform: scale(0.99); }
+.hero-dato-n { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.025em; color: var(--signal-ink); }
+.hero-dato-txt { font-size: 0.875rem; color: var(--mid); max-width: 16rem; }
+.hero-dato-cta {
+  font-size: 0.8125rem; font-weight: 680; color: var(--signal-ink);
+  margin-left: auto; white-space: nowrap;
+}
+
+/* ============================================================================
+   Línea Sismo · ficha de evento real (Venezuela)
+   ----------------------------------------------------------------------------
+   Venezuela no tiene geometría cargada (no hay GeoJSON como el de Colombia en
+   `lib/mapa.ts`), así que en vez de fingir un mapa interactivo se muestra la
+   ficha del evento: cifras agregadas, citadas, sin una sola persona nombrada.
+   ========================================================================= */
+
+.ls-evento-cab { display: flex; flex-direction: column; gap: 0.25rem; }
+
+.ls-evento-cifras {
+  display: grid; gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+}
+.ls-evento-cifra { display: flex; flex-direction: column; gap: 0.125rem; }
+.ls-evento-cifra b {
+  font-size: clamp(1.5rem, 3.5vw, 2rem); font-weight: 700;
+  letter-spacing: -0.02em; line-height: 1;
+}
+.ls-evento-cifra span { font-size: 0.8125rem; color: var(--mid); }
+.ls-evento-cifra-alta b { color: var(--intensidad-alta); }
+
+.ls-evento-fuente { font-size: 0.8125rem; color: var(--faint); }
+.ls-evento-fuente a { color: var(--mid); text-decoration: underline; text-underline-offset: 2px; }
+.ls-evento-fuente a:hover { color: var(--ink); }
+
+.ls-evento-nota {
+  font-size: 0.8125rem; color: var(--faint);
+  border-top: 1px solid var(--rule); padding-top: 0.875rem;
+}
+
+/* Silueta esquemática de Venezuela — deliberadamente sin el detalle del
+   contorno de Colombia (.mapa-departamentos/.mapa-contorno), para no fingir
+   una precisión que no tiene. Un solo trazo suave, tono neutro. */
+.ls-ven-blob {
+  fill: var(--surface);
+  stroke: var(--rule-strong);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.ls-ven-pin { cursor: pointer; transition: transform 160ms cubic-bezier(0.32, 0.72, 0, 1); }
+.ls-ven-pin:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.ls-ven-pin circle { fill: var(--signal); stroke: var(--surface); stroke-width: 2; }
+.ls-ven-pin:hover circle, .ls-ven-pin-activo circle { fill: var(--signal-ink); }
+.ls-ven-pin text {
+  font-size: 10px; font-weight: 700; fill: #fff;
+  text-anchor: middle; pointer-events: none;
+}
+
+/* El número de zona dentro de la tarjeta de Venezuela — misma forma que el
+   pin del mapa, para que se lea como el mismo dato en dos sitios. */
+.ls-ven-region-n {
+  flex: none; width: 1.5rem; height: 1.5rem; border-radius: 999px;
+  background: var(--sunken); color: var(--mid);
+  display: grid; place-items: center;
+  font-size: 0.75rem; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.ls-tarjeta-barra-alta { background: var(--intensidad-alta); }
