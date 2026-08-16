@@ -12,6 +12,15 @@
 export const WHATSAPP = "https://wa.me/15553075027?text=Hola";
 export const REPO = "https://github.com/LucasLeguizamo/centinela";
 
+/**
+ * Mismas cifras que ya cita `PUERTAS.necesito.buscar_persona.respuesta.fuente`
+ * más abajo, sacadas acá para que el hero pueda mostrarlas sin repetir el
+ * número a mano. Ya formateadas: en el componente darían distinto y React se
+ * queja.
+ */
+export const TOTAL_DESAPARECIDOS_TEXTO = "5.416";
+export const TOTAL_LOCALIZADOS_TEXTO = "1.137";
+
 /* -------------------------------------------------------------- capacidades
    Lo que el producto hace hoy. Sin etiquetas de estado: una insignia de
    "en construcción" en una web de presentación se lee como "todavía no está
@@ -31,7 +40,7 @@ export const CAPACIDADES = [
   {
     titulo: "Te conecta con la ayuda",
     detalle:
-      "Cuando deja de temblar, reúne en un solo chat las plataformas ciudadanas de acopios, donaciones y búsqueda de personas.",
+      "Cuando deja de temblar, reúne en un solo chat la búsqueda de personas, los acopios y las donaciones de las plataformas ciudadanas.",
   },
   {
     titulo: "Vive donde ya estás",
