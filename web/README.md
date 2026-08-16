@@ -5,7 +5,28 @@ bot a propósito: los números que muestra salen del bot que corre al lado, no d
 una copia que alguien se acuerde de actualizar.
 
 Next.js 15 (App Router) + TypeScript + [Motion](https://motion.dev). CSS plano
-con tokens, sin Tailwind. Se despliega en Vercel con **Root Directory `web/`**.
+con tokens, sin Tailwind.
+
+## Deploy
+
+Funciona de las dos maneras, a propósito:
+
+- **Root Directory `web/`** en los ajustes del proyecto: Vercel detecta Next y
+  no hace falta nada más.
+- **Root Directory en la raíz del repo**: manda el `vercel.json` de la raíz,
+  que instala y compila dentro de `web/`.
+
+El segundo existe porque el primero es un ajuste del dashboard que no vive en
+el repo: si alguien crea el proyecto de nuevo y se olvida de tocarlo, el build
+sale en blanco o el dominio queda sirviendo un 404, que es exactamente lo que
+pasó con `centinela-silk-alpha.vercel.app`.
+
+Después de cada deploy conviene correr la prueba de humo contra la URL real,
+no contra localhost:
+
+```bash
+URL=https://<lo-que-sea>.vercel.app pnpm humo
+```
 
 ```bash
 pnpm install
