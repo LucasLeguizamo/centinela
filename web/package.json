@@ -10,7 +10,8 @@
     "verificar": "next build && tsc --noEmit",
     "puntos": "node scripts/puntos.mjs",
     "mapa": "node scripts/mapa.mjs",
-    "humo": "node scripts/humo.mjs"
+    "humo": "node scripts/humo.mjs",
+    "mundo": "node scripts/mundo.mjs"
   },
   "dependencies": {
     "motion": "^11.15.0",

@@ -19,6 +19,7 @@ import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PUNTOS, TOTAL_ACOPIOS, TOTAL_MUNICIPIOS } from "../lib/puntos.ts";
+import { CONTEOS, MAS_GRANDE, MAS_SIGNIFICATIVO, SEIS_MAS } from "../lib/mundo.ts";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const URL = process.env.URL ?? "http://localhost:3210/";
@@ -117,6 +118,51 @@ await pagina.locator(".wa-reiniciar").click();
 revisar("reiniciar deja el chat en el saludo", (await pagina.locator(".wa-hilo").innerText()).includes("Soy Centinela"));
 
 await pagina.screenshot({ path: join(CAPTURAS, "escritorio.png"), fullPage: true });
+
+
+/* ------------------------------------------------------------------ histórico */
+
+console.log("\nHistórico · /historico");
+const historico = await escritorio.newPage();
+historico.on("console", (m) => m.type() === "error" && errores.push(m.text()));
+historico.on("pageerror", (e) => errores.push(String(e)));
+
+const rHistorico = await historico.goto(URL.replace(/\/$/, "") + "/historico", { waitUntil: "networkidle" });
+revisar("responde 200", rHistorico?.status() === 200, `status ${rHistorico?.status()}`);
+await recorrer(historico);
+
+// El catálogo es lo más fácil de dejar desactualizado: se genera y se congela.
+// Si la página no muestra los mismos eventos que el último `pnpm mundo`,
+// alguien editó a mano o se olvidó de regenerar.
+const textoHistorico = await historico.locator("body").innerText();
+revisar(
+  `dice ${CONTEOS[0].toLocaleString("es-CO")} sismos`,
+  textoHistorico.includes(CONTEOS[0].toLocaleString("es-CO"))
+);
+revisar(
+  `lista los ${SEIS_MAS.length} sismos de M6+`,
+  await historico.locator("#mundo .sismos").first().locator(".sismo").count() === SEIS_MAS.length
+);
+revisar(
+  "el contraste enfrenta dos sismos distintos",
+  MAS_GRANDE.id !== MAS_SIGNIFICATIVO.id && textoHistorico.includes(MAS_SIGNIFICATIVO.lugar)
+);
+// Los lugares vienen en inglés del USGS y se traducen al generar. Si aparece
+// un « of » suelto, alguien agregó un formato que el traductor no cubre.
+revisar("los lugares están en español", !/\d+ km [NSEW]{1,3} of /.test(textoHistorico));
+
+// El nav cruza rutas: desde acá los anclajes de la portada tienen que llevar
+// a la portada, no a secciones que en esta página no existen.
+revisar(
+  "el nav vuelve a la portada",
+  await historico.locator('.nav-enlaces a[href="/#problema"]').count() === 1
+);
+
+// La landing dejó de contarlo: si vuelve a aparecer ahí, se duplicó.
+revisar("el histórico no está en la portada", await pagina.locator("#mundo").count() === 0);
+
+await historico.screenshot({ path: join(CAPTURAS, "historico.png"), fullPage: true });
+
 
 /* ---------------------------------------------------------------------- móvil */
 
