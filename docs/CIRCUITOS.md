@@ -77,7 +77,22 @@ flowchart LR
 
 Tarjeta por persona: foto (o silueta si no autorizó foto), nombre, última ubicación conocida, fecha/hora, folio, estado (**buscando** / **encontrado**). Botón **"Tengo información"** → abre WhatsApp con el folio precargado — el bot pide un mínimo de contacto a quien avisa antes de reenviar el aviso a instituciones.
 
-### C · Resolución
+### C · Cuando alguien aporta información
+
+```
+Vos · tengo información PD-240815-0417
+
+Centinela · Gracias por escribir. Contame qué sabés y cómo te
+podemos contactar — se lo paso a Protección Civil y a la
+Comisión de Búsqueda.
+
+Vos · La vi ayer en la tarde en el hospital San Francisco, de Quibdó
+
+Centinela · Listo, se lo pasé a Protección Civil. Te contactan si
+necesitan algo más.
+```
+
+### D · Resolución
 
 | # | Paso |
 |---|---|
@@ -145,9 +160,30 @@ flowchart LR
 
 Tarjeta: ubicación, nivel de riesgo (misma codificación de color que "buscando/encontrado"), qué necesita, folio, estado (**necesita ayuda** / **atendido**), foto si fue autorizada. Botón **"Puedo ayudar con esto"** → abre WhatsApp con el folio precargado.
 
-### C · Resolución
+### C · Cuando alguien ofrece ayuda
 
-Igual que PD: quien reportó (o la brigada, una vez llega) escribe *"ATENDIDO DAÑ-..."*, el bot valida el número, confirma, y la tarjeta cambia de estado. También se puede reabrir con *"REABRIR DAÑ-..."* si se cerró por error.
+```
+Vos · puedo ayudar DAÑ-240815-0512
+
+Centinela · Gracias por escribir. Contame qué podés ofrecer y cómo
+te contactamos — se lo paso a la brigada de evaluación estructural,
+que coordina la ayuda en la zona.
+
+Vos · Tengo un carro y puedo llevar agua, 3011234567
+
+Centinela · Listo, se lo pasé a la brigada. Te contactan si tu
+ayuda encaja con lo que necesitan ahí.
+```
+
+### D · Resolución
+
+| # | Paso |
+|---|---|
+| 1 | Quien reportó (o la brigada, una vez llega) escribe: *"ATENDIDO DAÑ-240815-0512"* |
+| 2 | El bot valida el número — si no coincide: *"Este folio no es tuyo. Si podés ayudar, escribí 'puedo ayudar' o contactá a la brigada de evaluación estructural."* |
+| 3 | Confirma antes de cambiar nada: *"¿Confirmás que ya te atendió la brigada?"* |
+| 4 | Estado pasa a **atendido** en la web |
+| — | **Si fue un error**, se reabre escribiendo *"REABRIR DAÑ-..."*, con la misma validación de número |
 
 ---
 
@@ -205,13 +241,36 @@ flowchart LR
 | 4 | **"¿Autorizás publicar esta oferta en la web para que una organización te contacte?"** Sí/No | Si dice que no, se lo redirige a los canales oficiales en vez de publicarlo |
 | 5 | Folio + confirmación | — |
 
+> **Si elige "Donar dinero"** (1a): *"Para donar dinero, hacelo directo en el canal oficial de [organización], nunca por acá. [link]"* seguido de *"⚠️ Centinela nunca pide ni entrega números de cuenta por WhatsApp."*
+
 ### B · Vitrina web
 
 Tarjeta: qué ofrece, zona, folio, estado (**disponible** / **coordinado**) — sin contacto visible. Botón **"Coordinar con esta persona"** → abre WhatsApp con el folio precargado, el mensaje llega al *bot*, que arma el puente.
 
-### C · Resolución
+### C · Cuando alguien quiere coordinar
 
-El donante escribe *"COORDINADO DON-..."* o *"YA NO DISPONIBLE DON-..."*, el bot valida el número, confirma, cambia el estado. Reabrir: *"REABRIR DON-..."*.
+```
+Vos · quiero coordinar DON-240815-0618
+
+Centinela · Le aviso a quien ofreció esto. Dejame tu nombre y
+cómo te puede contactar.
+
+Vos · Ana Gómez, 3001234567
+
+Centinela · (al donante) Alguien quiere coordinar tu oferta
+(DON-240815-0618): Ana Gómez, 3001234567. Podés escribirle
+directo o seguir coordinando por acá.
+```
+
+### D · Resolución
+
+| # | Paso |
+|---|---|
+| 1 | El donante escribe: *"COORDINADO DON-240815-0618"* o *"YA NO DISPONIBLE DON-240815-0618"* |
+| 2 | El bot valida el número — si no coincide: *"Este folio no es tuyo. Si querés coordinar, escribí 'quiero coordinar' o contactá a la organización."* |
+| 3 | Confirma antes de cambiar nada: *"¿Confirmás que ya coordinaste la entrega?"* |
+| 4 | Estado pasa a **coordinado** en la web (o se retira la oferta) |
+| — | **Si fue un error**, se reabre escribiendo *"REABRIR DON-..."*, con la misma validación de número |
 
 ---
 
@@ -260,6 +319,7 @@ En la web pública aparece la tarjeta con estado **buscando**. Cuando Carlos esc
 | Dinero (Donaciones) | Sin cambios: redirect puro a canales oficiales | Regla ya existente de Centinela — el bot nunca dicta un número de cuenta |
 | Contacto (Donaciones) | El bot media, la tarjeta no muestra el número | Mismo criterio de protección de datos que en PD |
 | Vitrinas (Donaciones) | Ofertas individuales y acopios institucionales (`src/ingesta.js`), en secciones separadas | No se mezcla un dato institucional ya verificado con una oferta suelta de una persona |
+| Mensaje "folio no es tuyo" | Misma estructura en los tres circuitos, cambia solo el verbo de acción y la institución | Reconocible como el mensaje de error de folios sin importar el circuito |
 
 ## Siguiente paso
 
