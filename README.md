@@ -4,7 +4,7 @@ Alertas sísmicas por WhatsApp para quien el teléfono no avisa.
 
 El 10 de agosto de 2026 un M7.4 sacudió Colombia con epicentro en San José del Palmar, Chocó. Los Android sonaron segundos antes. Los iPhone no sonaron: **Apple solo opera alertas sísmicas en Estados Unidos y Taiwán.**
 
-Centinela llena ese hueco por el único canal que todo el mundo ya tiene abierto. Y hace algo que ningún sistema hace hoy: te dice qué tan fuerte se sintió **donde vos estás**, no la magnitud en el epicentro.
+Centinela llena ese hueco por el único canal que todo el mundo ya tiene abierto. Y hace algo que ningún sistema hace hoy: te dice qué tan fuerte se sintió **donde estás tú**, no la magnitud en el epicentro.
 
 ## Lo que sí hace y lo que no
 
@@ -73,6 +73,7 @@ workflows/onboarding/           Flujo de suscripción por WhatsApp
 docs/ONBOARDING.md              Cómo se capta y por qué así
 docs/DEMO.md                    Guion de demo, 3 minutos
 docs/prd-contratacion.html      PRD de contratación pública (parqueado)
+web/                            La landing del proyecto (Next.js)
 ```
 
 ## Dónde llevar la ayuda
@@ -82,14 +83,14 @@ Después del sismo aparecieron catorce webs ciudadanas para coordinar la ayuda, 
 Centinela responde eso con los datos de esas webs, no con los suyos: `src/ingesta.js` los trae cada media hora y `src/responder.js` contesta con el punto más cercano, qué recibe y cuándo se verificó.
 
 ```
-Vos · donde dono
+Tú · donde dono
 
 Centinela · Esto es lo que tengo cerca de Pereira:
 
   *Complejo Bodeguero Alpaca — Bodega 01* ✓
   _Tigresas de la Patria — «Colombia un solo corazón»_
   📍 Vía La Romelia – El Pollo, Vereda Santa Ana Baja, Pereira, Risaralda
-  📏 a 6.5 km de vos
+  📏 a 6.5 km de ti
   🕐 8:00 a. m. – 12:00 m. y 2:00 – 6:00 p. m.
   🔴 Más urgente: Agua potable, Alimentos no perecederos, Elementos de aseo
   📞 +573105289438
@@ -190,6 +191,23 @@ Reproduciendo el M7.4 del 10 de agosto sobre un suscriptor en Quibdó:
 > **En Quibdó se sintió moderado** (a 152 km del epicentro).
 
 El mismo evento le habría dicho *fuerte* a Pereira y *leve* a Bogotá. Las réplicas M5.0 y M4.2, profundas, no habrían despertado a nadie.
+
+## La landing
+
+`web/` es la página con la que se presenta el proyecto. Está acá adentro y no en su propio repo por una razón concreta: **no duplica un solo número.** La física de la intensidad la importa de `src/sismos.js` —el mismo archivo que corre en el bot, no una copia— y los acopios los agrupa desde `data/snapshots/`. Si alguien toca un coeficiente, la página cambia con el bot en el mismo commit.
+
+```bash
+cd web
+pnpm install
+pnpm dev                     # http://localhost:3000
+pnpm verificar               # build + tipos
+pnpm build && pnpm start -p 3210 &
+pnpm humo                    # recorre la página en Chrome y la revisa entera
+```
+
+`pnpm humo` es la prueba que se corre antes de mostrarla: revisa errores de consola, que cada sección se revele al hacer scroll, que el chat de ayuda conteste, que en celular no haya scroll horizontal, que las cifras coincidan con las del bot y que no se haya colado voseo. Deja capturas en `web/.capturas/`.
+
+Detalle en [`web/README.md`](web/README.md). Se despliega en Vercel con Root Directory `web/`.
 
 ## Estado
 

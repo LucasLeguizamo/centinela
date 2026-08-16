@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+.vercel/
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
+
+# Nunca. Ni de ejemplo con valores reales.
+.env
+.env.*
+!.env.example
+
+.capturas/
