@@ -5,6 +5,8 @@ node_modules/
 .env.*
 # el ejemplo sí se versiona: es la documentación de qué hace falta
 !.env.example
+# datos de personas reales: números de teléfono en un repo público
+data/suscriptores.json
 data/enviados.json
 data/respondidos.json
 data/recursos.json
