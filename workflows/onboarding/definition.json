@@ -3,7 +3,37 @@
     {
       "label": "next",
       "source": "start",
+      "target": "decidir_entrada"
+    },
+    {
+      "label": "puerta",
+      "source": "decidir_entrada",
+      "target": "puerta_inicial"
+    },
+    {
+      "label": "menu",
+      "source": "decidir_entrada",
+      "target": "menu_completo"
+    },
+    {
+      "label": "next",
+      "source": "puerta_inicial",
+      "target": "esperar_puerta"
+    },
+    {
+      "label": "next",
+      "source": "esperar_puerta",
+      "target": "decidir_puerta"
+    },
+    {
+      "label": "alertas",
+      "source": "decidir_puerta",
       "target": "pedir_ciudad"
+    },
+    {
+      "label": "ayuda",
+      "source": "decidir_puerta",
+      "target": "menu_completo"
     },
     {
       "label": "next",
@@ -13,7 +43,42 @@
     {
       "label": "next",
       "source": "recibir_ciudad",
-      "target": "confirmar"
+      "target": "ciudad_valida"
+    },
+    {
+      "label": "ciudad",
+      "source": "ciudad_valida",
+      "target": "confirmar_botones"
+    },
+    {
+      "label": "otra_cosa",
+      "source": "ciudad_valida",
+      "target": "pedir_ciudad"
+    },
+    {
+      "label": "next",
+      "source": "confirmar_botones",
+      "target": "esperar_boton"
+    },
+    {
+      "label": "next",
+      "source": "esperar_boton",
+      "target": "decidir_boton"
+    },
+    {
+      "label": "menu",
+      "source": "decidir_boton",
+      "target": "menu_completo"
+    },
+    {
+      "label": "baja",
+      "source": "decidir_boton",
+      "target": "despedida"
+    },
+    {
+      "label": "fila",
+      "source": "decidir_entrada",
+      "target": "fin_fila"
     }
   ],
   "nodes": [
@@ -32,8 +97,103 @@
     {
       "data": {
         "config": {
+          "conditions": [
+            {
+              "description": "Tocó una fila del menú: 'Llevar cosas', 'Donar dinero', 'Donar sangre', 'Ser voluntario', 'Ofrecer alojamiento', 'Buscar a alguien', 'Perdí mi mascota', 'Necesito dónde dormir', 'Necesito ayuda económica' o 'Reportar daños'. También si pregunta por un sismo: qué tan fuerte fue, réplicas, cambiar de ciudad.",
+              "label": "fila"
+            },
+            {
+              "description": "Pide ver las opciones: ayuda, el menú, qué puede hacer, o tocó el botón 'Ver el menú'.",
+              "label": "menu"
+            },
+            {
+              "description": "No pide nada concreto: un saludo, un 'hola', un mensaje suelto, o cualquier cosa que no se entienda.",
+              "label": "puerta"
+            }
+          ],
+          "decision_type": "ai",
+          "provider_model_name": "gpt-4.1-mini"
+        },
+        "node_type": "decide"
+      },
+      "id": "decidir_entrada",
+      "position": {
+        "x": 240,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "body_text": "Te aviso cuando tiemble donde estás, y qué tan fuerte se sintió ahí.\n\nEl aviso llega después del temblor, no antes.\n\n¿Con qué te ayudo?",
+          "buttons": [
+            {
+              "id": "alertas",
+              "title": "Alertas de sismo"
+            },
+            {
+              "id": "ayuda",
+              "title": "Ayuda y donaciones"
+            }
+          ],
+          "footer_text": "Puedes volver acá escribiendo AYUDA",
+          "interactive_type": "button"
+        },
+        "node_type": "send_interactive"
+      },
+      "id": "puerta_inicial",
+      "position": {
+        "x": 480,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "has_timeout": false,
+          "save_response_to": "puerta"
+        },
+        "node_type": "wait_for_response"
+      },
+      "id": "esperar_puerta",
+      "position": {
+        "x": 720,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "conditions": [
+            {
+              "description": "Tocó 'Alertas de sismo' o dijo que quiere recibir avisos de temblores.",
+              "label": "alertas"
+            },
+            {
+              "description": "Tocó 'Ayuda y donaciones', o dice que necesita algo o que quiere ayudar.",
+              "label": "ayuda"
+            }
+          ],
+          "decision_type": "ai",
+          "provider_model_name": "gpt-4.1-mini"
+        },
+        "node_type": "decide"
+      },
+      "id": "decidir_puerta",
+      "position": {
+        "x": 960,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
           "body_text": "Te aviso cuando tiemble donde estás, y qué tan fuerte se sintió ahí.\n\nEl aviso llega después del temblor, no antes.\n\n¿En qué ciudad estás?",
-          "footer_text": "Escribí AYUDA si necesitás o querés dar una mano",
+          "footer_text": "Escribe AYUDA si necesitas o quieres dar una mano",
           "header_text": "Centinela",
           "header_type": "text",
           "interactive_type": "list",
@@ -105,7 +265,7 @@
       },
       "id": "pedir_ciudad",
       "position": {
-        "x": 240,
+        "x": 1200,
         "y": 0
       },
       "type": "flow-node"
@@ -120,7 +280,7 @@
       },
       "id": "recibir_ciudad",
       "position": {
-        "x": 480,
+        "x": 1440,
         "y": 0
       },
       "type": "flow-node"
@@ -128,13 +288,200 @@
     {
       "data": {
         "config": {
-          "message": "Listo ✅ Quedaste suscrito para {{vars.ciudad}}.\n\nSolo te escribo cuando tiemble lo suficiente para sentirse ahí.\n\nAYUDA para el menú · BAJA para dejar de recibir"
+          "conditions": [
+            {
+              "description": "Contestó con una de las ciudades de la lista: Quibdó, Pereira, Manizales, Armenia, Bucaramanga, Cali, Pasto, Tumaco, Medellín o Bogotá.",
+              "label": "ciudad"
+            },
+            {
+              "description": "Contestó cualquier otra cosa: un saludo, una pregunta, o una ciudad que no está en la lista.",
+              "label": "otra_cosa"
+            }
+          ],
+          "decision_type": "ai",
+          "provider_model_name": "gpt-4.1-mini"
+        },
+        "node_type": "decide"
+      },
+      "id": "ciudad_valida",
+      "position": {
+        "x": 1680,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "body_text": "Listo ✅ Quedaste suscrito a la ciudad que elegiste.\n\nSolo te escribo cuando tiemble lo suficiente para sentirse ahí.",
+          "buttons": [
+            {
+              "id": "ayuda",
+              "title": "Ver el menú"
+            },
+            {
+              "id": "baja",
+              "title": "Darme de baja"
+            }
+          ],
+          "interactive_type": "button"
+        },
+        "node_type": "send_interactive"
+      },
+      "id": "confirmar_botones",
+      "position": {
+        "x": 1920,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "has_timeout": false,
+          "save_response_to": "eleccion"
+        },
+        "node_type": "wait_for_response"
+      },
+      "id": "esperar_boton",
+      "position": {
+        "x": 2160,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "conditions": [
+            {
+              "description": "Quiere dejar de recibir alertas: tocó 'Darme de baja' o escribió baja, stop, cancelar.",
+              "label": "baja"
+            },
+            {
+              "description": "Cualquier otra cosa: quiere el menú, pregunta algo, o saluda.",
+              "label": "menu"
+            }
+          ],
+          "decision_type": "ai",
+          "provider_model_name": "gpt-4.1-mini"
+        },
+        "node_type": "decide"
+      },
+      "id": "decidir_boton",
+      "position": {
+        "x": 2400,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "body_text": "Elige una y te digo a dónde ir, lo más cerca que tenga de donde estás.\n\nDespués puedes pedirme otra.",
+          "footer_text": "Todo lo que te paso lleva fuente y fecha",
+          "header_text": "¿Con qué te ayudo?",
+          "header_type": "text",
+          "interactive_type": "list",
+          "list_button_text": "Ver opciones",
+          "list_sections": [
+            {
+              "rows": [
+                {
+                  "description": "Reportar o consultar",
+                  "id": "buscar_persona",
+                  "title": "Buscar a alguien"
+                },
+                {
+                  "description": "Reportar o buscar",
+                  "id": "mascota",
+                  "title": "Perdí mi mascota"
+                },
+                {
+                  "description": "Alojamiento temporal",
+                  "id": "alojamiento_necesito",
+                  "title": "Necesito dónde dormir"
+                },
+                {
+                  "description": "Publicar mi caso",
+                  "id": "necesito_dinero",
+                  "title": "Necesito ayuda económica"
+                },
+                {
+                  "description": "Mi casa o edificio",
+                  "id": "reportar_dano",
+                  "title": "Reportar daños"
+                }
+              ],
+              "title": "Necesito ayuda"
+            },
+            {
+              "rows": [
+                {
+                  "description": "Mercado, ropa, aseo",
+                  "id": "acopio",
+                  "title": "Llevar cosas"
+                },
+                {
+                  "description": "Canales verificados",
+                  "id": "donar",
+                  "title": "Donar dinero"
+                },
+                {
+                  "description": "Puntos y jornadas",
+                  "id": "sangre",
+                  "title": "Donar sangre"
+                },
+                {
+                  "description": "Poner el tiempo o el oficio",
+                  "id": "voluntariado",
+                  "title": "Ser voluntario"
+                },
+                {
+                  "description": "Tengo un espacio libre",
+                  "id": "alojamiento_ofrecer",
+                  "title": "Ofrecer alojamiento"
+                }
+              ],
+              "title": "Quiero ayudar"
+            }
+          ]
+        },
+        "node_type": "send_interactive"
+      },
+      "id": "menu_completo",
+      "position": {
+        "x": 2640,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "message": "Listo, no te escribo más.\n\nSi cambias de idea, mándame cualquier mensaje y te vuelvo a dar de alta."
         },
         "node_type": "send_text"
       },
-      "id": "confirmar",
+      "id": "despedida",
       "position": {
-        "x": 720,
+        "x": 2880,
+        "y": 0
+      },
+      "type": "flow-node"
+    },
+    {
+      "data": {
+        "config": {
+          "value_type": "boolean",
+          "variable_name": "atendido_por_responder",
+          "variable_value": true
+        },
+        "node_type": "set_variable"
+      },
+      "id": "fin_fila",
+      "position": {
+        "x": 3120,
         "y": 0
       },
       "type": "flow-node"

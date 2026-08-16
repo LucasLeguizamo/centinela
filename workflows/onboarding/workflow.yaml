@@ -1,5 +1,5 @@
 definition: definition.json
-name: Onboarding y suscripción a alertas
+name: Onboarding, suscripción y menú de ayuda
 slug: onboarding
 status: draft
 triggers:
