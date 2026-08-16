@@ -207,6 +207,8 @@ pnpm humo                    # recorre la página en Chrome y la revisa entera
 
 `pnpm humo` es la prueba que se corre antes de mostrarla: revisa errores de consola, que cada sección se revele al hacer scroll, que el chat de ayuda conteste, que en celular no haya scroll horizontal, que las cifras coincidan con las del bot y que no se haya colado voseo. Deja capturas en `web/.capturas/`.
 
+La ruta `/historico` publica el catálogo mundial del último mes del USGS —los conteos, los M6+ uno por uno y lo que se movió en Colombia—, y con él la prueba de la tesis: el sismo más grande del mes casi nunca es el más grave. Se regenera con `pnpm mundo` antes de cada deploy.
+
 Detalle en [`web/README.md`](web/README.md). Se despliega en Vercel con Root Directory `web/`.
 
 ## Estado

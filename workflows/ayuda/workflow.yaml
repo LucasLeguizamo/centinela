@@ -1,8 +1,0 @@
-definition: definition.json
-name: "Menú de ayuda: quiero ayudar / necesito ayuda"
-slug: ayuda
-status: draft
-triggers:
-  - active: true
-    phoneNumberId: "1243233552205505"
-    triggerType: inbound_message

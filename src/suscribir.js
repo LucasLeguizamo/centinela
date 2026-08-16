@@ -42,6 +42,10 @@ export async function sincronizar({ seco = false } = {}) {
   const cambios = [];
 
   for (const m of mensajes) {
+    // Sin remitente no hay a quién avisarle: un suscriptor con teléfono null
+    // se guarda igual, falla en cada envío y nadie se entera.
+    if (!m.from) continue;
+
     const texto = (m.text?.body ?? m.kapso?.content ?? "").trim().toLowerCase();
 
     // La baja manda sobre todo lo demás: si alguien quiere irse, se va.

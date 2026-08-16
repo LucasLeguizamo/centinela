@@ -6,8 +6,10 @@
     "@kapso/workflows": "^0.3.1"
   },
   "scripts": {
-    "test": "node src/sismos.test.js && node src/responder.test.js && node src/tsunami.test.js && node src/db.test.js && node src/suscribir.test.js && node src/fuentes/acopios-emergency.test.js",
+    "test": "node src/sismos.test.js && node src/responder.test.js && node src/tsunami.test.js && node src/db.test.js && node src/suscribir.test.js && node src/demo.test.js && node src/sms.test.js && node src/transcribir.test.js && node src/entender.test.js && node src/fuentes/acopios-emergency.test.js",
+    "eval": "node src/entender.eval.js",
     "ingesta": "node src/ingesta.js",
-    "migrar": "node src/migrar.js"
+    "migrar": "node src/migrar.js",
+    "vigilar": "node src/vigilar.js"
   }
 }

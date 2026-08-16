@@ -12,7 +12,20 @@ import {
 } from "./sismos.js";
 import { avisosParaColombia, mensajeTsunami } from "./tsunami.js";
 import { leerSuscriptores, leerEnviados, marcarEnviados } from "./db.js";
-import { enviarTexto, enviarAlertaSismica, ventanasAbiertas } from "./whatsapp.js";
+import { enviarTexto, enviarBotones, enviarAlertaSismica, ventanasAbiertas } from "./whatsapp.js";
+
+/**
+ * Los dos botones que van pegados a cada alerta.
+ *
+ * Después de un sismo nadie se acuerda de qué palabra escribir, y el momento
+ * en que la persona necesita el directorio es justo ese. Los títulos son las
+ * frases que reconoce `clasificarIntencion`, así que tocarlos y escribirlos
+ * entran por el mismo lado.
+ */
+const BOTONES_AYUDA = [
+  { id: "necesito_ayuda", titulo: "Necesito ayuda" },
+  { id: "quiero_ayudar", titulo: "Quiero ayudar" },
+];
 
 /** Las cinco variables de la plantilla UTILITY `alerta_sismica`. */
 function plantillaDe(sismo, lugar) {
@@ -128,7 +141,7 @@ export async function revisarYAlertar({ seco = false, desdeMinutos = 90 } = {}) 
       } else {
         const abierta = abiertas.has(sus.telefono);
         const wamid = abierta
-          ? await enviarTexto(sus.telefono, envio.texto)
+          ? await enviarBotones(sus.telefono, { texto: envio.texto, botones: BOTONES_AYUDA })
           : await enviarAlertaSismica(sus.telefono, plantillaDe(envio.sismo, lugar));
         const via = abierta ? "texto" : "plantilla";
         console.log(`→ ${sus.telefono} (${lugar.nombre}) ${envio.etiqueta} · ${via} · ${wamid}`);

@@ -1,7 +1,7 @@
 // Autochequeo del clasificador de intenciones: node src/responder.test.js
 
 import assert from "node:assert/strict";
-import { clasificarIntencion, componerRespuesta } from "./responder.js";
+import { clasificarIntencion, componerRespuesta, menuLista, textoDeMensaje, primerEnlace, recortar, quienContesta } from "./responder.js";
 import { MUNICIPIOS } from "./sismos.js";
 
 // Cómo escribe la gente de verdad: sin acentos, sin mayúsculas, con typos.
@@ -21,6 +21,11 @@ const CASOS = [
   ["hola", "ayuda"],
   ["ayuda", "ayuda"],
   ["buenas", "ayuda"],
+
+  // Títulos de los botones del mensaje de confirmación (workflows/onboarding):
+  // WhatsApp los manda como texto, así que tienen que caer donde corresponde.
+  ["Ver el menú", "ayuda"],
+  ["Darme de baja", "baja"],
 
   // Las dos puertas del menú. Van antes que las categorías porque "necesito
   // ayuda" contiene "ayuda", que si no se la llevaría el menú general.
@@ -170,5 +175,107 @@ assert.ok(
   /oficial/.test(donar),
   "la respuesta de donación debe mandar al canal oficial de cada organización"
 );
+
+// Los menús tocables: WhatsApp corta la lista en 10 filas sin avisar, y una
+// fila cortada es una puerta que la persona nunca ve.
+for (const intencion of ["ayuda", "menu_ayudar", "menu_necesito"]) {
+  const lista = menuLista(intencion);
+  const filas = lista.secciones.flatMap((s) => s.filas);
+
+  assert.ok(filas.length <= 10, `${intencion}: ${filas.length} filas, WhatsApp acepta 10`);
+  assert.ok(filas.length > 0, `${intencion} sin opciones`);
+  assert.ok(lista.botonLista.length <= 20, "el botón de la lista se corta en 20 caracteres");
+
+  for (const fila of filas) {
+    assert.ok(fila.titulo.length <= 24, `fila larga: ${fila.titulo}`);
+    // Tocar la fila manda su título como texto: si el clasificador no lo
+    // reconoce, el bot no sabe qué le pidieron.
+    assert.notEqual(clasificarIntencion(fila.titulo), "desconocida", `fila muda: ${fila.titulo}`);
+  }
+}
+
+// Quien pide ayuda a secas ve las dos puertas, y la de quien la está pasando
+// mal va primero.
+assert.equal(menuLista("ayuda").secciones.length, 2);
+assert.match(menuLista("ayuda").secciones[0].titulo, /necesitas/i);
+
+// Un toque no trae text.body: si esto se rompe, el bot ignora en silencio
+// todos los botones que él mismo mandó.
+assert.equal(
+  textoDeMensaje({ interactive: { type: "list_reply", list_reply: { id: "buscar_persona", title: "Buscar a alguien" } } }),
+  "Buscar a alguien"
+);
+assert.equal(
+  textoDeMensaje({ interactive: { type: "button_reply", button_reply: { id: "ayuda", title: "Ver el menú" } } }),
+  "Ver el menú"
+);
+assert.equal(textoDeMensaje({ text: { body: "hola" } }), "hola");
+assert.equal(textoDeMensaje({ type: "audio" }), null);
+
+// El botón de enlace: WhatsApp deja uno solo por mensaje y corta la etiqueta
+// en 20 caracteres. Se lo lleva el primer recurso, que es el más relevante.
+const conRecurso = await componerRespuesta("necesito_dinero", MUNICIPIOS.quibdo);
+const enlace = primerEnlace(conRecurso);
+assert.ok(enlace, "una respuesta con recursos debe poder llevar botón");
+assert.ok(enlace.url.startsWith("http"));
+assert.ok(enlace.etiqueta.length <= 20, `etiqueta larga: ${enlace.etiqueta}`);
+
+// Sin enlaces no hay botón que poner, y un cuerpo largo no entra en un
+// mensaje interactivo: en los dos casos sale como texto.
+assert.equal(primerEnlace("No tengo nada cerca todavía."), null);
+assert.equal(primerEnlace("x".repeat(1100) + " https://ejemplo.org"), null);
+
+// Ninguna respuesta puede salir cortada a mitad de una dirección o un enlace:
+// mandar a alguien a un lugar a medias es peor que no mandarlo.
+const largo = await componerRespuesta("donar", MUNICIPIOS.quibdo);
+const corto = recortar(largo);
+assert.ok(largo.length > 1024, "esta prueba necesita una respuesta que se pase del tope");
+assert.ok(corto.length <= 1024, `el recorte dejó ${corto.length} caracteres`);
+assert.ok(corto.includes("oficial"), "la frase que abre se queda");
+assert.ok(corto.includes("No te fíes"), "la advertencia de campañas falsas no se recorta nunca");
+assert.ok(corto.includes("nunca te voy a mandar un número de cuenta"), "la promesa de no dictar cuentas tampoco");
+assert.ok(!/https?:\/\/\S*$/.test(corto) || corto.endsWith(")"), "no se corta un enlace por la mitad");
+for (const url of corto.match(/https?:\/\/\S+/g) ?? []) {
+  assert.ok(largo.includes(url), "todo enlace que queda tiene que ser uno completo del original");
+}
+
+// Lo que ya entra no se toca.
+assert.equal(recortar("una respuesta corta"), "una respuesta corta");
+
+// Los botones del workflow los contesta Kapso. Si el clasificador empieza a
+// darles una intención propia, la persona recibe dos respuestas por un toque.
+for (const titulo of ["Alertas de sismo", "Ayuda y donaciones", "Ver el menú", "Darme de baja"]) {
+  assert.ok(
+    ["ayuda", "baja", "desconocida", "detalle"].includes(clasificarIntencion(titulo)),
+    `"${titulo}" es un botón del workflow: el responder no debería tener respuesta propia`
+  );
+}
+
+// Cada botón tiene dueño, y uno solo.
+//
+// Los dos botones de la alerta estuvieron asignados al workflow mientras el
+// workflow los daba por ajenos: nadie contestaba y la persona quedaba sola
+// justo después de un sismo. Esta tabla es el contrato entre los dos procesos.
+const DUENO = [
+  // Los manda el workflow y los contesta el workflow.
+  ["Alertas de sismo", "workflow"],
+  ["Ayuda y donaciones", "workflow"],
+  ["Ver el menú", "workflow"],
+  ["Darme de baja", "workflow"],
+  ["Manizales", "workflow"],
+  ["hola", "workflow"],
+
+  // Los botones de la alerta y las filas del menú: datos, o sea responder.
+  ["Necesito ayuda", "responder"],
+  ["Quiero ayudar", "responder"],
+  ["Llevar cosas", "responder"],
+  ["Buscar a alguien", "responder"],
+  ["Reportar daños", "responder"],
+  ["que tan fuerte fue", "responder"],
+];
+
+for (const [texto, dueno] of DUENO) {
+  assert.equal(quienContesta(texto), dueno, `"${texto}" debería contestarlo el ${dueno}`);
+}
 
 console.log(`✓ responder.js ok — ${CASOS.length} frases clasificadas`);
