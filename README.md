@@ -209,7 +209,7 @@ pnpm humo                    # recorre la página en Chrome y la revisa entera
 
 La ruta `/historico` publica el catálogo mundial del último mes del USGS —los conteos, los M6+ uno por uno y lo que se movió en Colombia—, y con él la prueba de la tesis: el sismo más grande del mes casi nunca es el más grave. Se regenera con `pnpm mundo` antes de cada deploy.
 
-Detalle en [`web/README.md`](web/README.md). Se despliega en Vercel con Root Directory `web/`.
+Detalle en [`web/README.md`](web/README.md). Se despliega en Vercel: con Root Directory `web/`, o desde la raíz con el `vercel.json` que hay ahí.
 
 ## Estado
 
