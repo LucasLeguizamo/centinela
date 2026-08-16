@@ -22,17 +22,16 @@ export function Nav() {
   return (
     <nav className={`chrome nav ${pegada ? "nav-pegada" : ""}`}>
       <div className="nav-contenido">
-        <a href="/" className="nav-marca">
+        <a href="#" className="nav-marca">
           <span className="nav-punto" aria-hidden="true" />
           Centinela
         </a>
 
         <div className="nav-enlaces">
-          <a href="/#problema">El problema</a>
-          <a href="/#demo">Cómo se usa</a>
-          <a href="/#ayuda">Después del sismo</a>
-          <a href="/#como">Cómo funciona</a>
-          <a href="/historico">El histórico</a>
+          <a href="#problema">El problema</a>
+          <a href="#demo">Cómo se usa</a>
+          <a href="#ayuda">Después del sismo</a>
+          <a href="#como">Cómo funciona</a>
         </div>
 
         <a className="boton boton-primario nav-cta" href={WHATSAPP} target="_blank" rel="noreferrer">

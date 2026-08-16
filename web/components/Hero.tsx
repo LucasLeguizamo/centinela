@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
-import { WHATSAPP } from "@/lib/datos";
+import { TOTAL_DESAPARECIDOS_TEXTO, TOTAL_LOCALIZADOS_TEXTO, WHATSAPP } from "@/lib/datos";
 import { TOTAL_ACOPIOS, TOTAL_MUNICIPIOS } from "@/lib/puntos";
 import { MUELLE } from "@/lib/motion";
 import { MapaColombia } from "./MapaColombia";
@@ -43,6 +43,8 @@ const T = {
   lead: 2.6,
   acciones: 2.72,
   nota: 2.82,
+  /** El dato del mapa llega último: es un anexo al titular, no parte de él. */
+  dato: 3.05,
 };
 
 const SALIDA = [0.23, 1, 0.32, 1] as const;
@@ -129,14 +131,20 @@ export function Hero() {
             <a className="boton boton-primario" href={WHATSAPP} target="_blank" rel="noreferrer">
               Probarlo en WhatsApp
             </a>
-            <a className="boton boton-secundario" href="#problema">
+            {/* Entrada directa a Línea Sismo — es la sección que sigue al
+                hero, no un enlace a un anexo al final de la página. */}
+            <a className="boton boton-secundario" href="#linea-sismo">
+              Ayuda en caso de sismo
+            </a>
+            <a className="boton boton-fantasma" href="#problema">
               Ver cómo funciona
             </a>
           </motion.div>
 
           <motion.p className="hero-nota" {...entra(T.nota)}>
             Centinela avisa por WhatsApp qué tan fuerte se sintió el sismo{" "}
-            <strong>en tu municipio</strong>, y te conecta con{" "}
+            <strong>en tu municipio</strong>, te ayuda a{" "}
+            <strong>buscar a alguien no localizado</strong>, y te conecta con{" "}
             <strong>{TOTAL_ACOPIOS} puntos de acopio</strong> en{" "}
             {TOTAL_MUNICIPIOS} municipios.
           </motion.p>
@@ -149,6 +157,20 @@ export function Hero() {
           animate={{ opacity: 1 }}
           transition={{ duration: reducido ? 0.25 : 0.6, ease: SALIDA, delay: 0.1 }}
         >
+          {/* Mismo número que ya responde el chat de Ayuda — no uno nuevo.
+              Lleva a Línea Sismo (la vitrina de búsqueda, con el mapa
+              tocable), no al chat: es la entrada natural para "quiero ver
+              cómo se busca a alguien". Va antes del mapa, no encima:
+              superpuesta chocaba con la leyenda de abajo en pantallas donde
+              el mapa no llena todo el alto disponible. */}
+          <motion.a className="hero-dato" href="#linea-sismo" {...entra(T.dato)}>
+            <span className="hero-dato-n dato">{TOTAL_DESAPARECIDOS_TEXTO}</span>
+            <span className="hero-dato-txt">
+              personas reportadas desaparecidas · {TOTAL_LOCALIZADOS_TEXTO} ya localizadas
+            </span>
+            <span className="hero-dato-cta">Buscar a alguien →</span>
+          </motion.a>
+
           <MapaColombia momentoDelSismo={T.sismo} />
         </motion.div>
       </div>

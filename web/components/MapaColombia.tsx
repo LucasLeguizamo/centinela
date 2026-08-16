@@ -19,8 +19,10 @@ const SALIDA = [0.23, 1, 0.32, 1] as const;
  *
  * Dos codificaciones sobre el mismo punto, porque la sección cuenta dos cosas
  * a la vez: el **tamaño** es cuántos acopios hay ahí, y el **color** es cuánto
- * se sintió el sismo. Un punto grande y naranja es una ciudad golpeada que ya
- * está recibiendo ayuda; uno pequeño y gris, una que ayuda sin haberlo sentido.
+ * se sintió el sismo — una escala real de verde (leve) a rojo (fuerte), con
+ * `--fuerza-pct` (ver `globals.css`). Un punto grande y rojo es una ciudad
+ * golpeada que ya está recibiendo ayuda; uno pequeño y gris, una que ayuda sin
+ * haberlo sentido.
  */
 
 const [EPI_X, EPI_Y] = proyectar(SISMO.lat, SISMO.lon);
@@ -28,6 +30,20 @@ const [EPI_X, EPI_Y] = proyectar(SISMO.lat, SISMO.lon);
 /** Radio según cuántos acopios: raíz cuadrada para que el área sea proporcional. */
 function radio(p: Punto) {
   return 3.6 + Math.sqrt(p.acopios) * 2.6;
+}
+
+/**
+ * `fuerza` es real, pero nunca se acerca a 1: el municipio con acopio más
+ * cercano al epicentro está a 124 km, así que el máximo del set es ~0,59.
+ * Mapear esa franja completa contra rojo↔verde requiere estirarla al 0–100%
+ * real de los puntos que sí existen — si no, hasta el más fuerte se queda a
+ * mitad de camino y todo el mapa sale amarillo-oliva.
+ */
+const FUERZA_MIN = Math.min(...PUNTOS.map((p) => p.fuerza));
+const FUERZA_MAX = Math.max(...PUNTOS.map((p) => p.fuerza));
+
+function porcentajeIntensidad(p: Punto) {
+  return ((p.fuerza - FUERZA_MIN) / (FUERZA_MAX - FUERZA_MIN)) * 100;
 }
 
 export function MapaColombia({ momentoDelSismo = 0 }: { momentoDelSismo?: number } = {}) {
@@ -138,7 +154,7 @@ export function MapaColombia({ momentoDelSismo = 0 }: { momentoDelSismo?: number
                   cx={x}
                   cy={y}
                   r={radio(p)}
-                  style={{ opacity: 0.42 + p.fuerza * 0.58 }}
+                  style={{ "--fuerza-pct": porcentajeIntensidad(p) } as React.CSSProperties}
                 />
               </motion.g>
             );
@@ -214,7 +230,8 @@ export function MapaColombia({ momentoDelSismo = 0 }: { momentoDelSismo?: number
       </div>
 
       <div className="mapa-leyenda">
-        <span><i className="leyenda-punto" /> Se sintió el sismo</span>
+        <span><i className="leyenda-punto leyenda-punto-alta" /> Se sintió fuerte</span>
+        <span><i className="leyenda-punto leyenda-punto-baja" /> Se sintió leve</span>
         <span><i className="leyenda-punto leyenda-punto-mudo" /> No se sintió</span>
         <span><i className="leyenda-cruz" /> Epicentro</span>
         <span className="leyenda-nota">El tamaño es cuántos acopios hay</span>

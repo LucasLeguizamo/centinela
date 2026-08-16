@@ -60,7 +60,6 @@ El texto es en **español colombiano**: nada de voseo. `pnpm humo` lo revisa.
 | `components/Ayuda.tsx` | El WhatsApp interactivo. Se puede clicar de verdad. |
 | `components/Cierre.tsx` | Cómo funciona, capacidades, números y el QR. |
 | `components/Glifos.tsx` | Los tres glifos animados de las capacidades. |
-| `components/Mundo.tsx` | El catálogo mundial. Vive en `/historico`, no en la portada: la portada tiene un solo trabajo, que es llevar a alguien hasta el WhatsApp. |
 
 ## Los archivos generados — no editar a mano
 
@@ -70,18 +69,11 @@ siguiente que corra el script te pisa el cambio.
 ```bash
 pnpm mapa     # geometría de Colombia desde el GeoJSON → lib/mapa.ts
 pnpm puntos   # ../data/snapshots/acopios-*.json por municipio → lib/puntos.ts
-pnpm mundo    # catálogo mundial de los últimos 30 días del USGS → lib/mundo.ts
 ```
 
 `pnpm mapa` solo hace falta si cambia la geometría (nunca). `pnpm puntos` sí:
 córrelo cada vez que el bot deje un volcado nuevo en `data/snapshots/`, y
 apunta la constante `VOLCADO` del script al archivo nuevo.
-
-**`pnpm mundo` córrelo antes de cada deploy.** La sección del histórico dice
-«los últimos 30 días» y esa ventana envejece sola: si el archivo tiene tres
-semanas, la página miente con una cifra que el jurado puede verificar en el
-USGS en diez segundos. Se genera en vez de consultarse en vivo a propósito —
-si el USGS tarda mientras alguien presenta, la sección tiene que seguir ahí.
 
 ## El QR
 
