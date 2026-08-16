@@ -34,11 +34,14 @@ function respuesta(status, cuerpo) {
   };
 }
 
+// Los GET devuelven "[]" salvo cuando se prueba el caso de cuerpo vacío.
+let cuerpoGet = "[]";
+
 globalThis.fetch = async (url, opciones = {}) => {
   const metodo = opciones.method ?? "GET";
   llamadas.push({ metodo, url: String(url), opciones });
 
-  if (metodo === "GET") return respuesta(200, "[]");
+  if (metodo === "GET") return respuesta(200, cuerpoGet);
   if (metodo === "PATCH") return respuesta(204, "");
   return respuesta(201, "");
 };
@@ -49,6 +52,8 @@ const {
   guardarSuscriptor,
   marcarEnviados,
   leerSuscriptores,
+  leerRespondidos,
+  leerEnviados,
 } = await import("./db.js");
 
 assert.equal(usandoSupabase, true, "con las variables puestas debe usar Supabase");
@@ -101,6 +106,21 @@ assert.ok(
   apagado.url.includes("visto_en=lt.") && !apagado.url.includes("not.in"),
   "lo obsoleto se apaga por marca de agua, no listando cada hash"
 );
+
+// Las tres lecturas con el cuerpo vacío.
+//
+// Arreglar `pedir()` para que devuelva null en vez de reventar mueve el
+// problema en vez de resolverlo: quien lo llama hace `.map()` sobre eso. Sería
+// cambiar un fallo ruidoso en la ingesta —que alguien ve— por un TypeError en
+// el ciclo de alertas, que corre sin nadie mirando. Los `?? []` cierran eso y
+// esto los fija.
+cuerpoGet = "";
+
+assert.deepEqual(await leerSuscriptores(), [], "sin cuerpo, la lista va vacía y no null");
+assert.deepEqual([...(await leerRespondidos())], [], "leerRespondidos no puede reventar");
+assert.deepEqual([...(await leerEnviados())], [], "leerEnviados no puede reventar");
+
+cuerpoGet = "[]";
 
 globalThis.fetch = fetchReal;
 console.log(`✓ db.js ok — ${llamadas.length} peticiones, cuerpos vacíos incluidos`);
