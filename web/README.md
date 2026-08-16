@@ -9,17 +9,27 @@ con tokens, sin Tailwind.
 
 ## Deploy
 
-Funciona de las dos maneras, a propósito:
+**Root Directory `web/`**, en los ajustes del proyecto. No es opcional y no
+hay forma de reemplazarlo desde el repo: Vercel busca la dependencia `next` en
+el `package.json` del directorio raíz que le indiques, y el de la raíz de este
+repo es el del bot, que no la tiene. Un `vercel.json` en la raíz con
+`framework: nextjs` tampoco sirve — falla con:
 
-- **Root Directory `web/`** en los ajustes del proyecto: Vercel detecta Next y
-  no hace falta nada más.
-- **Root Directory en la raíz del repo**: manda el `vercel.json` de la raíz,
-  que instala y compila dentro de `web/`.
+```
+Error: No Next.js version detected. Make sure your package.json has "next"
+in either "dependencies" or "devDependencies".
+```
 
-El segundo existe porque el primero es un ajuste del dashboard que no vive en
-el repo: si alguien crea el proyecto de nuevo y se olvida de tocarlo, el build
-sale en blanco o el dominio queda sirviendo un 404, que es exactamente lo que
-pasó con `centinela-silk-alpha.vercel.app`.
+Es un ajuste del dashboard que no vive en el repo, así que se pierde cada vez
+que alguien recrea el proyecto. Cuando se pierde, el dominio queda sirviendo
+un 404 — que es lo que pasó con `centinela-silk-alpha.vercel.app`.
+
+Por CLI se puede fijar sin entrar al dashboard:
+
+```bash
+cd web && vercel link      # crea o reusa el proyecto con web/ como raíz
+cd web && vercel --prod    # deploy de producción
+```
 
 Después de cada deploy conviene correr la prueba de humo contra la URL real,
 no contra localhost:
