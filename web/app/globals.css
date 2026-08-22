@@ -1690,3 +1690,18 @@ a { color: inherit; }
   .sismo-cuando { grid-column: 2; }
   .sismo-alerta { grid-column: 2; text-align: left; }
 }
+
+/* ------------------------------------------------------------------- 404
+
+   Una 404 vacía se ve como una página rota. Centrarla en el alto de la
+   pantalla la convierte en algo deliberado — y deja las salidas donde caen
+   los ojos, no debajo del pliegue. */
+
+.perdido {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.perdido .lead { margin-inline: auto; }
